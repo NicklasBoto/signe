@@ -1,0 +1,77 @@
+layout toplevel ;
+
+Progr. Program ::= [Toplevel] ;
+terminator Toplevel ";" ;
+
+ToplF  . Toplevel ::= Id [Pattern] ":=" Expr ;
+ToplFT . Toplevel ::= Id [Pattern] ":" Type ":=" Expr ;
+separator Pattern "" ;
+
+position token Id '~' char | letter (letter | digit | '_' | '\'')* ;
+
+EVar   . Expr3 ::= Id ;
+ETrue  . Expr3 ::= "~1" ;
+EFalse . Expr3 ::= "~0" ;
+qplus  . Expr3 ::= "~+" ;
+qminus . Expr3 ::= "~-" ;
+qimagi . Expr3 ::= "~i" ;
+qimagj . Expr3 ::= "~j" ;
+ETup   . Expr3 ::= "(" [Expr] ")" ;
+EMul   . Expr3 ::=  Complex "*" Expr3 ;
+EApp   . Expr2 ::= Expr2 Expr3 ;
+EPlus  . Expr1 ::= Expr2 "+" Expr1 ;
+emin   . Expr1 ::= Expr2 "-" Expr1 ;
+EIfq   . Expr1 ::= "if°" Expr "then" Expr "else" Expr ;
+eifqs  . Expr1 ::= "if*" Expr "then" Expr "else" Expr ;
+EIf    . Expr1 ::= "if" Expr "then" Expr "else" Expr ;
+ELet   . Expr1 ::= "let" "{" [Let] "}" "in" Expr ;
+EAbs   . Expr1 ::= "λ" [Id] "." Expr ;
+eabss  . Expr1 ::= "\\" [Id] "." Expr ;
+coercions Expr 3 ;
+separator Expr "," ;
+
+define qplus  = EPlus EFalse ETrue ;
+define qminus = emin EFalse ETrue ;
+define qimagi = EMul cjmag ETrue ;
+define qimagj = EMul cnmag EFalse ;
+define emin x y = EPlus x (EMul (creal (Scalar "-1")) y) ;
+define eifqs c t f = EIfq c t f ;
+define eabss x m = EAbs x m ;
+
+layout "let" ;
+layout stop "in" ;
+
+LLet . Let ::= Pattern "=" Expr ;
+separator nonempty Let ";" ;
+
+CComp . Complex ::= Scalar "+" Scalar "j" ;
+creal . Complex ::= Scalar ;
+cimag . Complex ::= Scalar "j" ;
+cnmag . Complex ::= "-j" ;
+cjmag . Complex ::= "j" ;
+
+define creal r = CComp r (Scalar "0") ;
+define cimag i = CComp (Scalar "0") i ;
+define cnmag   = CComp (Scalar "0") (Scalar "-1") ;
+define cjmag   = CComp (Scalar "0") (Scalar "1") ;
+
+token Scalar '-'? digit+ ('.' digit+ ('E' '-'? digit+)?)? ;
+
+PVar . Pattern ::= Id ;
+PTup . Pattern ::= "(" Id "," Id ")" ;
+
+MVar   . Mono2 ::= Id ;
+MQubit . Mono2 ::= "qubit" ;
+MTens  . Mono1 ::= Mono2 "*" Mono1 ;
+MArrow . Mono1 ::= Mono2 "->" Mono1 ;
+coercions Mono 2 ;
+
+TMono  . Type ::= Mono ;
+TPoly  . Type ::= "∀" [Id] "." Mono ;
+tpolys . Type ::= "forall" [Id] "." Mono ;
+separator nonempty Id "" ; 
+
+define tpolys c t = TPoly c t ;
+
+comment "--" ;
+comment "{-" "-}" ;

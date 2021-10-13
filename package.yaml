@@ -21,12 +21,13 @@ description:         Please see the README on GitHub at <https://github.com/Nick
 
 dependencies:
 - base >= 4.7 && < 5
+- array
 
 library:
   source-dirs: src
 
 executables:
-  signe-exe:
+  signe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

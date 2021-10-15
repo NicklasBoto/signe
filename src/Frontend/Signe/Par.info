@@ -51,92 +51,98 @@ Grammar
 	Expr2 -> Expr3                                     (40)
 	Expr1 -> Expr2 '+' Expr1                           (41)
 	Expr1 -> Expr2 '-' Expr1                           (42)
-	Expr1 -> 'if°' Expr 'then' Expr 'else' Expr        (43)
-	Expr1 -> 'if*' Expr 'then' Expr 'else' Expr        (44)
-	Expr1 -> 'if' Expr 'then' Expr 'else' Expr         (45)
-	Expr1 -> 'let' '{' ListLet '}' 'in' Expr           (46)
-	Expr1 -> 'λ' ListId '.' Expr                       (47)
-	Expr1 -> '\\' ListId '.' Expr                      (48)
-	Expr1 -> Expr2                                     (49)
-	Expr -> Expr1                                      (50)
-	ListExpr ->                                        (51)
-	ListExpr -> Expr                                   (52)
-	ListExpr -> Expr ',' ListExpr                      (53)
-	Let -> Pattern '=' Expr                            (54)
-	ListLet -> Let                                     (55)
-	ListLet -> Let ';' ListLet                         (56)
-	Complex2 -> Scalar '+' Scalar 'i'                  (57)
-	Complex2 -> Scalar '-' Scalar 'i'                  (58)
-	Complex2 -> Scalar                                 (59)
-	Complex2 -> Scalar 'i'                             (60)
-	Complex2 -> '-i'                                   (61)
-	Complex2 -> 'i'                                    (62)
-	Complex2 -> 'π'                                    (63)
-	Complex2 -> 'pi'                                   (64)
-	Complex2 -> 'e'                                    (65)
-	Complex2 -> '(' Complex ')'                        (66)
-	Complex1 -> Complex2 '^' Complex1                  (67)
-	Complex1 -> Complex2 '/' Complex1                  (68)
-	Complex1 -> Complex2 Complex1                      (69)
-	Complex1 -> Complex2                               (70)
-	Complex -> Complex1                                (71)
-	Pattern -> Id                                      (72)
-	Pattern -> '(' Id ',' Id ')'                       (73)
-	Mono2 -> Id                                        (74)
-	Mono2 -> 'qubit'                                   (75)
-	Mono2 -> '(' Mono ')'                              (76)
-	Mono1 -> Mono2 '*' Mono1                           (77)
-	Mono1 -> Mono2 '->' Mono1                          (78)
-	Mono1 -> Mono2                                     (79)
-	Mono -> Mono1                                      (80)
-	Type -> Mono                                       (81)
-	Type -> '∀' ListId '.' Mono                        (82)
-	Type -> 'forall' ListId '.' Mono                   (83)
-	ListId -> Id                                       (84)
-	ListId -> Id ListId                                (85)
+	Expr1 -> Expr2 '$' Expr1                           (43)
+	Expr1 -> Expr2 '∘' Expr1                           (44)
+	Expr1 -> Expr2 '@' Expr1                           (45)
+	Expr1 -> 'if°' Expr 'then' Expr 'else' Expr        (46)
+	Expr1 -> 'if*' Expr 'then' Expr 'else' Expr        (47)
+	Expr1 -> 'if' Expr 'then' Expr 'else' Expr         (48)
+	Expr1 -> 'let' '{' ListLet '}' 'in' Expr           (49)
+	Expr1 -> 'λ' ListId '.' Expr                       (50)
+	Expr1 -> '\\' ListId '.' Expr                      (51)
+	Expr1 -> Expr2                                     (52)
+	Expr -> Expr1                                      (53)
+	ListExpr ->                                        (54)
+	ListExpr -> Expr                                   (55)
+	ListExpr -> Expr ',' ListExpr                      (56)
+	Let -> Pattern '=' Expr                            (57)
+	ListLet -> Let                                     (58)
+	ListLet -> Let ';' ListLet                         (59)
+	Complex2 -> Scalar '+' Scalar 'i'                  (60)
+	Complex2 -> Scalar '-' Scalar 'i'                  (61)
+	Complex2 -> Scalar                                 (62)
+	Complex2 -> Scalar 'i'                             (63)
+	Complex2 -> '-i'                                   (64)
+	Complex2 -> 'i'                                    (65)
+	Complex2 -> 'π'                                    (66)
+	Complex2 -> 'pi'                                   (67)
+	Complex2 -> 'e'                                    (68)
+	Complex2 -> '(' Complex ')'                        (69)
+	Complex1 -> Complex2 '^' Complex1                  (70)
+	Complex1 -> Complex2 '/' Complex1                  (71)
+	Complex1 -> Complex2 Complex1                      (72)
+	Complex1 -> Complex2                               (73)
+	Complex -> Complex1                                (74)
+	Pattern -> Id                                      (75)
+	Pattern -> '(' Id ',' Id ')'                       (76)
+	Mono2 -> Id                                        (77)
+	Mono2 -> 'qubit'                                   (78)
+	Mono2 -> '(' Mono ')'                              (79)
+	Mono1 -> Mono2 '*' Mono1                           (80)
+	Mono1 -> Mono2 '->' Mono1                          (81)
+	Mono1 -> Mono2                                     (82)
+	Mono -> Mono1                                      (83)
+	Type -> Mono                                       (84)
+	Type -> '∀' ListId '.' Mono                        (85)
+	Type -> 'forall' ListId '.' Mono                   (86)
+	ListId -> Id                                       (87)
+	ListId -> Id ListId                                (88)
 
 -----------------------------------------------------------------------------
 Terminals
 -----------------------------------------------------------------------------
-	'('            { PT _ (TS _ 1) }
-	')'            { PT _ (TS _ 2) }
-	'*'            { PT _ (TS _ 3) }
-	'+'            { PT _ (TS _ 4) }
-	','            { PT _ (TS _ 5) }
-	'-'            { PT _ (TS _ 6) }
-	'->'           { PT _ (TS _ 7) }
-	'-i'           { PT _ (TS _ 8) }
-	'.'            { PT _ (TS _ 9) }
-	'/'            { PT _ (TS _ 10) }
-	':'            { PT _ (TS _ 11) }
-	':='           { PT _ (TS _ 12) }
-	';'            { PT _ (TS _ 13) }
-	'='            { PT _ (TS _ 14) }
-	'\\'           { PT _ (TS _ 15) }
-	'^'            { PT _ (TS _ 16) }
-	'e'            { PT _ (TS _ 17) }
-	'else'         { PT _ (TS _ 18) }
-	'forall'       { PT _ (TS _ 19) }
-	'i'            { PT _ (TS _ 20) }
-	'if'           { PT _ (TS _ 21) }
-	'if*'          { PT _ (TS _ 22) }
-	'if°'          { PT _ (TS _ 23) }
-	'in'           { PT _ (TS _ 24) }
-	'let'          { PT _ (TS _ 25) }
-	'pi'           { PT _ (TS _ 26) }
-	'qubit'        { PT _ (TS _ 27) }
-	'then'         { PT _ (TS _ 28) }
-	'{'            { PT _ (TS _ 29) }
-	'}'            { PT _ (TS _ 30) }
-	'~+'           { PT _ (TS _ 31) }
-	'~-'           { PT _ (TS _ 32) }
-	'~0'           { PT _ (TS _ 33) }
-	'~1'           { PT _ (TS _ 34) }
-	'~i'           { PT _ (TS _ 35) }
-	'~j'           { PT _ (TS _ 36) }
-	'λ'            { PT _ (TS _ 37) }
-	'π'            { PT _ (TS _ 38) }
-	'∀'            { PT _ (TS _ 39) }
+	'$'            { PT _ (TS _ 1) }
+	'('            { PT _ (TS _ 2) }
+	')'            { PT _ (TS _ 3) }
+	'*'            { PT _ (TS _ 4) }
+	'+'            { PT _ (TS _ 5) }
+	','            { PT _ (TS _ 6) }
+	'-'            { PT _ (TS _ 7) }
+	'->'           { PT _ (TS _ 8) }
+	'-i'           { PT _ (TS _ 9) }
+	'.'            { PT _ (TS _ 10) }
+	'/'            { PT _ (TS _ 11) }
+	':'            { PT _ (TS _ 12) }
+	':='           { PT _ (TS _ 13) }
+	';'            { PT _ (TS _ 14) }
+	'='            { PT _ (TS _ 15) }
+	'@'            { PT _ (TS _ 16) }
+	'\\'           { PT _ (TS _ 17) }
+	'^'            { PT _ (TS _ 18) }
+	'e'            { PT _ (TS _ 19) }
+	'else'         { PT _ (TS _ 20) }
+	'forall'       { PT _ (TS _ 21) }
+	'i'            { PT _ (TS _ 22) }
+	'if'           { PT _ (TS _ 23) }
+	'if*'          { PT _ (TS _ 24) }
+	'if°'          { PT _ (TS _ 25) }
+	'in'           { PT _ (TS _ 26) }
+	'let'          { PT _ (TS _ 27) }
+	'pi'           { PT _ (TS _ 28) }
+	'qubit'        { PT _ (TS _ 29) }
+	'then'         { PT _ (TS _ 30) }
+	'{'            { PT _ (TS _ 31) }
+	'}'            { PT _ (TS _ 32) }
+	'~+'           { PT _ (TS _ 33) }
+	'~-'           { PT _ (TS _ 34) }
+	'~0'           { PT _ (TS _ 35) }
+	'~1'           { PT _ (TS _ 36) }
+	'~i'           { PT _ (TS _ 37) }
+	'~j'           { PT _ (TS _ 38) }
+	'λ'            { PT _ (TS _ 39) }
+	'π'            { PT _ (TS _ 40) }
+	'∀'            { PT _ (TS _ 41) }
+	'∘'            { PT _ (TS _ 42) }
 	L_Id           { PT _ (T_Id _) }
 	L_Scalar       { PT _ (T_Scalar $$) }
 
@@ -171,20 +177,20 @@ Non-terminals
 	ListPattern     rules 27, 28
 	Expr3           rules 29, 30, 31, 32, 33, 34, 35, 36, 37, 38
 	Expr2           rules 39, 40
-	Expr1           rules 41, 42, 43, 44, 45, 46, 47, 48, 49
-	Expr            rule  50
-	ListExpr        rules 51, 52, 53
-	Let             rule  54
-	ListLet         rules 55, 56
-	Complex2        rules 57, 58, 59, 60, 61, 62, 63, 64, 65, 66
-	Complex1        rules 67, 68, 69, 70
-	Complex         rule  71
-	Pattern         rules 72, 73
-	Mono2           rules 74, 75, 76
-	Mono1           rules 77, 78, 79
-	Mono            rule  80
-	Type            rules 81, 82, 83
-	ListId          rules 84, 85
+	Expr1           rules 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52
+	Expr            rule  53
+	ListExpr        rules 54, 55, 56
+	Let             rule  57
+	ListLet         rules 58, 59
+	Complex2        rules 60, 61, 62, 63, 64, 65, 66, 67, 68, 69
+	Complex1        rules 70, 71, 72, 73
+	Complex         rule  74
+	Pattern         rules 75, 76
+	Mono2           rules 77, 78, 79
+	Mono1           rules 80, 81, 82
+	Mono            rule  83
+	Type            rules 84, 85, 86
+	ListId          rules 87, 88
 
 -----------------------------------------------------------------------------
 States
@@ -379,7 +385,7 @@ State 8
 	'π'            shift, and enter state 48
 	L_Id           shift, and enter state 21
 	L_Scalar       shift, and enter state 49
-	%eof           reduce using rule 51
+	%eof           reduce using rule 54
 
 	Id             goto state 56
 	Scalar         goto state 39
@@ -545,6 +551,7 @@ State 21
 
 	Id -> L_Id .                                        (rule 20)
 
+	'$'            reduce using rule 20
 	'('            reduce using rule 20
 	')'            reduce using rule 20
 	'*'            reduce using rule 20
@@ -558,6 +565,7 @@ State 21
 	':='           reduce using rule 20
 	';'            reduce using rule 20
 	'='            reduce using rule 20
+	'@'            reduce using rule 20
 	'e'            reduce using rule 20
 	'else'         reduce using rule 20
 	'i'            reduce using rule 20
@@ -571,6 +579,7 @@ State 21
 	'~i'           reduce using rule 20
 	'~j'           reduce using rule 20
 	'π'            reduce using rule 20
+	'∘'            reduce using rule 20
 	L_Id           reduce using rule 20
 	L_Scalar       reduce using rule 20
 	%eof           reduce using rule 20
@@ -578,15 +587,15 @@ State 21
 
 State 22
 
-	ListId -> Id .                                      (rule 84)
-	ListId -> Id . ListId                               (rule 85)
+	ListId -> Id .                                      (rule 87)
+	ListId -> Id . ListId                               (rule 88)
 
-	'.'            reduce using rule 84
+	'.'            reduce using rule 87
 	L_Id           shift, and enter state 21
-	%eof           reduce using rule 84
+	%eof           reduce using rule 87
 
 	Id             goto state 22
-	ListId         goto state 120
+	ListId         goto state 123
 
 State 23
 
@@ -597,43 +606,43 @@ State 23
 
 State 24
 
-	Mono2 -> Id .                                       (rule 74)
+	Mono2 -> Id .                                       (rule 77)
 
-	')'            reduce using rule 74
-	'*'            reduce using rule 74
-	'->'           reduce using rule 74
-	':='           reduce using rule 74
-	%eof           reduce using rule 74
+	')'            reduce using rule 77
+	'*'            reduce using rule 77
+	'->'           reduce using rule 77
+	':='           reduce using rule 77
+	%eof           reduce using rule 77
 
 
 State 25
 
-	Mono1 -> Mono2 . '*' Mono1                          (rule 77)
-	Mono1 -> Mono2 . '->' Mono1                         (rule 78)
-	Mono1 -> Mono2 .                                    (rule 79)
+	Mono1 -> Mono2 . '*' Mono1                          (rule 80)
+	Mono1 -> Mono2 . '->' Mono1                         (rule 81)
+	Mono1 -> Mono2 .                                    (rule 82)
 
-	')'            reduce using rule 79
-	'*'            shift, and enter state 118
-	'->'           shift, and enter state 119
-	':='           reduce using rule 79
-	%eof           reduce using rule 79
+	')'            reduce using rule 82
+	'*'            shift, and enter state 121
+	'->'           shift, and enter state 122
+	':='           reduce using rule 82
+	%eof           reduce using rule 82
 
 
 State 26
 
-	Mono -> Mono1 .                                     (rule 80)
+	Mono -> Mono1 .                                     (rule 83)
 
-	')'            reduce using rule 80
-	':='           reduce using rule 80
-	%eof           reduce using rule 80
+	')'            reduce using rule 83
+	':='           reduce using rule 83
+	%eof           reduce using rule 83
 
 
 State 27
 
-	Type -> Mono .                                      (rule 81)
+	Type -> Mono .                                      (rule 84)
 
-	':='           reduce using rule 81
-	%eof           reduce using rule 81
+	':='           reduce using rule 84
+	%eof           reduce using rule 84
 
 
 State 28
@@ -645,7 +654,7 @@ State 28
 
 State 29
 
-	Mono2 -> '(' . Mono ')'                             (rule 76)
+	Mono2 -> '(' . Mono ')'                             (rule 79)
 
 	'('            shift, and enter state 29
 	'qubit'        shift, and enter state 31
@@ -654,36 +663,36 @@ State 29
 	Id             goto state 24
 	Mono2          goto state 25
 	Mono1          goto state 26
-	Mono           goto state 117
+	Mono           goto state 120
 
 State 30
 
-	Type -> 'forall' . ListId '.' Mono                  (rule 83)
+	Type -> 'forall' . ListId '.' Mono                  (rule 86)
 
 	L_Id           shift, and enter state 21
 
 	Id             goto state 22
-	ListId         goto state 116
+	ListId         goto state 119
 
 State 31
 
-	Mono2 -> 'qubit' .                                  (rule 75)
+	Mono2 -> 'qubit' .                                  (rule 78)
 
-	')'            reduce using rule 75
-	'*'            reduce using rule 75
-	'->'           reduce using rule 75
-	':='           reduce using rule 75
-	%eof           reduce using rule 75
+	')'            reduce using rule 78
+	'*'            reduce using rule 78
+	'->'           reduce using rule 78
+	':='           reduce using rule 78
+	%eof           reduce using rule 78
 
 
 State 32
 
-	Type -> '∀' . ListId '.' Mono                       (rule 82)
+	Type -> '∀' . ListId '.' Mono                       (rule 85)
 
 	L_Id           shift, and enter state 21
 
 	Id             goto state 22
-	ListId         goto state 115
+	ListId         goto state 118
 
 State 33
 
@@ -708,14 +717,14 @@ State 35
 
 State 36
 
-	Pattern -> Id .                                     (rule 72)
+	Pattern -> Id .                                     (rule 75)
 
-	'('            reduce using rule 72
-	':'            reduce using rule 72
-	':='           reduce using rule 72
-	'='            reduce using rule 72
-	L_Id           reduce using rule 72
-	%eof           reduce using rule 72
+	'('            reduce using rule 75
+	':'            reduce using rule 75
+	':='           reduce using rule 75
+	'='            reduce using rule 75
+	L_Id           reduce using rule 75
+	%eof           reduce using rule 75
 
 
 State 37
@@ -727,68 +736,68 @@ State 37
 
 State 38
 
-	Pattern -> '(' . Id ',' Id ')'                      (rule 73)
+	Pattern -> '(' . Id ',' Id ')'                      (rule 76)
 
 	L_Id           shift, and enter state 21
 
-	Id             goto state 114
+	Id             goto state 117
 
 State 39
 
-	Complex2 -> Scalar . '+' Scalar 'i'                 (rule 57)
-	Complex2 -> Scalar . '-' Scalar 'i'                 (rule 58)
-	Complex2 -> Scalar .                                (rule 59)
-	Complex2 -> Scalar . 'i'                            (rule 60)
+	Complex2 -> Scalar . '+' Scalar 'i'                 (rule 60)
+	Complex2 -> Scalar . '-' Scalar 'i'                 (rule 61)
+	Complex2 -> Scalar .                                (rule 62)
+	Complex2 -> Scalar . 'i'                            (rule 63)
 
-	'('            reduce using rule 59
-	')'            reduce using rule 59
-	'*'            reduce using rule 59
-	'+'            shift, and enter state 111
-	'-'            shift, and enter state 112
-	'-i'           reduce using rule 59
-	'/'            reduce using rule 59
-	'^'            reduce using rule 59
-	'e'            reduce using rule 59
-	'i'            shift, and enter state 113
-			(reduce using rule 59)
+	'('            reduce using rule 62
+	')'            reduce using rule 62
+	'*'            reduce using rule 62
+	'+'            shift, and enter state 114
+	'-'            shift, and enter state 115
+	'-i'           reduce using rule 62
+	'/'            reduce using rule 62
+	'^'            reduce using rule 62
+	'e'            reduce using rule 62
+	'i'            shift, and enter state 116
+			(reduce using rule 62)
 
-	'pi'           reduce using rule 59
-	'π'            reduce using rule 59
-	L_Scalar       reduce using rule 59
-	%eof           reduce using rule 59
+	'pi'           reduce using rule 62
+	'π'            reduce using rule 62
+	L_Scalar       reduce using rule 62
+	%eof           reduce using rule 62
 
 
 State 40
 
-	Complex1 -> Complex2 . '^' Complex1                 (rule 67)
-	Complex1 -> Complex2 . '/' Complex1                 (rule 68)
-	Complex1 -> Complex2 . Complex1                     (rule 69)
-	Complex1 -> Complex2 .                              (rule 70)
+	Complex1 -> Complex2 . '^' Complex1                 (rule 70)
+	Complex1 -> Complex2 . '/' Complex1                 (rule 71)
+	Complex1 -> Complex2 . Complex1                     (rule 72)
+	Complex1 -> Complex2 .                              (rule 73)
 
 	'('            shift, and enter state 43
-	')'            reduce using rule 70
-	'*'            reduce using rule 70
+	')'            reduce using rule 73
+	'*'            reduce using rule 73
 	'-i'           shift, and enter state 44
-	'/'            shift, and enter state 109
-	'^'            shift, and enter state 110
+	'/'            shift, and enter state 112
+	'^'            shift, and enter state 113
 	'e'            shift, and enter state 45
 	'i'            shift, and enter state 46
 	'pi'           shift, and enter state 47
 	'π'            shift, and enter state 48
 	L_Scalar       shift, and enter state 49
-	%eof           reduce using rule 70
+	%eof           reduce using rule 73
 
 	Scalar         goto state 39
 	Complex2       goto state 40
-	Complex1       goto state 108
+	Complex1       goto state 111
 
 State 41
 
-	Complex -> Complex1 .                               (rule 71)
+	Complex -> Complex1 .                               (rule 74)
 
-	')'            reduce using rule 71
-	'*'            reduce using rule 71
-	%eof           reduce using rule 71
+	')'            reduce using rule 74
+	'*'            reduce using rule 74
+	%eof           reduce using rule 74
 
 
 State 42
@@ -800,7 +809,7 @@ State 42
 
 State 43
 
-	Complex2 -> '(' . Complex ')'                       (rule 66)
+	Complex2 -> '(' . Complex ')'                       (rule 69)
 
 	'('            shift, and enter state 43
 	'-i'           shift, and enter state 44
@@ -813,65 +822,11 @@ State 43
 	Scalar         goto state 39
 	Complex2       goto state 40
 	Complex1       goto state 41
-	Complex        goto state 107
+	Complex        goto state 110
 
 State 44
 
-	Complex2 -> '-i' .                                  (rule 61)
-
-	'('            reduce using rule 61
-	')'            reduce using rule 61
-	'*'            reduce using rule 61
-	'-i'           reduce using rule 61
-	'/'            reduce using rule 61
-	'^'            reduce using rule 61
-	'e'            reduce using rule 61
-	'i'            reduce using rule 61
-	'pi'           reduce using rule 61
-	'π'            reduce using rule 61
-	L_Scalar       reduce using rule 61
-	%eof           reduce using rule 61
-
-
-State 45
-
-	Complex2 -> 'e' .                                   (rule 65)
-
-	'('            reduce using rule 65
-	')'            reduce using rule 65
-	'*'            reduce using rule 65
-	'-i'           reduce using rule 65
-	'/'            reduce using rule 65
-	'^'            reduce using rule 65
-	'e'            reduce using rule 65
-	'i'            reduce using rule 65
-	'pi'           reduce using rule 65
-	'π'            reduce using rule 65
-	L_Scalar       reduce using rule 65
-	%eof           reduce using rule 65
-
-
-State 46
-
-	Complex2 -> 'i' .                                   (rule 62)
-
-	'('            reduce using rule 62
-	')'            reduce using rule 62
-	'*'            reduce using rule 62
-	'-i'           reduce using rule 62
-	'/'            reduce using rule 62
-	'^'            reduce using rule 62
-	'e'            reduce using rule 62
-	'i'            reduce using rule 62
-	'pi'           reduce using rule 62
-	'π'            reduce using rule 62
-	L_Scalar       reduce using rule 62
-	%eof           reduce using rule 62
-
-
-State 47
-
-	Complex2 -> 'pi' .                                  (rule 64)
+	Complex2 -> '-i' .                                  (rule 64)
 
 	'('            reduce using rule 64
 	')'            reduce using rule 64
@@ -887,22 +842,76 @@ State 47
 	%eof           reduce using rule 64
 
 
+State 45
+
+	Complex2 -> 'e' .                                   (rule 68)
+
+	'('            reduce using rule 68
+	')'            reduce using rule 68
+	'*'            reduce using rule 68
+	'-i'           reduce using rule 68
+	'/'            reduce using rule 68
+	'^'            reduce using rule 68
+	'e'            reduce using rule 68
+	'i'            reduce using rule 68
+	'pi'           reduce using rule 68
+	'π'            reduce using rule 68
+	L_Scalar       reduce using rule 68
+	%eof           reduce using rule 68
+
+
+State 46
+
+	Complex2 -> 'i' .                                   (rule 65)
+
+	'('            reduce using rule 65
+	')'            reduce using rule 65
+	'*'            reduce using rule 65
+	'-i'           reduce using rule 65
+	'/'            reduce using rule 65
+	'^'            reduce using rule 65
+	'e'            reduce using rule 65
+	'i'            reduce using rule 65
+	'pi'           reduce using rule 65
+	'π'            reduce using rule 65
+	L_Scalar       reduce using rule 65
+	%eof           reduce using rule 65
+
+
+State 47
+
+	Complex2 -> 'pi' .                                  (rule 67)
+
+	'('            reduce using rule 67
+	')'            reduce using rule 67
+	'*'            reduce using rule 67
+	'-i'           reduce using rule 67
+	'/'            reduce using rule 67
+	'^'            reduce using rule 67
+	'e'            reduce using rule 67
+	'i'            reduce using rule 67
+	'pi'           reduce using rule 67
+	'π'            reduce using rule 67
+	L_Scalar       reduce using rule 67
+	%eof           reduce using rule 67
+
+
 State 48
 
-	Complex2 -> 'π' .                                   (rule 63)
+	Complex2 -> 'π' .                                   (rule 66)
 
-	'('            reduce using rule 63
-	')'            reduce using rule 63
-	'*'            reduce using rule 63
-	'-i'           reduce using rule 63
-	'/'            reduce using rule 63
-	'^'            reduce using rule 63
-	'e'            reduce using rule 63
-	'i'            reduce using rule 63
-	'pi'           reduce using rule 63
-	'π'            reduce using rule 63
-	L_Scalar       reduce using rule 63
-	%eof           reduce using rule 63
+	'('            reduce using rule 66
+	')'            reduce using rule 66
+	'*'            reduce using rule 66
+	'-i'           reduce using rule 66
+	'/'            reduce using rule 66
+	'^'            reduce using rule 66
+	'e'            reduce using rule 66
+	'i'            reduce using rule 66
+	'pi'           reduce using rule 66
+	'π'            reduce using rule 66
+	L_Scalar       reduce using rule 66
+	%eof           reduce using rule 66
 
 
 State 49
@@ -941,12 +950,12 @@ State 51
 
 State 52
 
-	ListLet -> Let .                                    (rule 55)
-	ListLet -> Let . ';' ListLet                        (rule 56)
+	ListLet -> Let .                                    (rule 58)
+	ListLet -> Let . ';' ListLet                        (rule 59)
 
-	';'            shift, and enter state 106
-	'}'            reduce using rule 55
-	%eof           reduce using rule 55
+	';'            shift, and enter state 109
+	'}'            reduce using rule 58
+	%eof           reduce using rule 58
 
 
 State 53
@@ -958,9 +967,9 @@ State 53
 
 State 54
 
-	Let -> Pattern . '=' Expr                           (rule 54)
+	Let -> Pattern . '=' Expr                           (rule 57)
 
-	'='            shift, and enter state 105
+	'='            shift, and enter state 108
 
 
 State 55
@@ -974,6 +983,7 @@ State 56
 
 	Expr3 -> Id .                                       (rule 29)
 
+	'$'            reduce using rule 29
 	'('            reduce using rule 29
 	')'            reduce using rule 29
 	'+'            reduce using rule 29
@@ -981,6 +991,7 @@ State 56
 	'-'            reduce using rule 29
 	'-i'           reduce using rule 29
 	';'            reduce using rule 29
+	'@'            reduce using rule 29
 	'e'            reduce using rule 29
 	'else'         reduce using rule 29
 	'i'            reduce using rule 29
@@ -994,6 +1005,7 @@ State 56
 	'~i'           reduce using rule 29
 	'~j'           reduce using rule 29
 	'π'            reduce using rule 29
+	'∘'            reduce using rule 29
 	L_Id           reduce using rule 29
 	L_Scalar       reduce using rule 29
 	%eof           reduce using rule 29
@@ -1003,6 +1015,7 @@ State 57
 
 	Expr2 -> Expr3 .                                    (rule 40)
 
+	'$'            reduce using rule 40
 	'('            reduce using rule 40
 	')'            reduce using rule 40
 	'+'            reduce using rule 40
@@ -1010,6 +1023,7 @@ State 57
 	'-'            reduce using rule 40
 	'-i'           reduce using rule 40
 	';'            reduce using rule 40
+	'@'            reduce using rule 40
 	'e'            reduce using rule 40
 	'else'         reduce using rule 40
 	'i'            reduce using rule 40
@@ -1023,6 +1037,7 @@ State 57
 	'~i'           reduce using rule 40
 	'~j'           reduce using rule 40
 	'π'            reduce using rule 40
+	'∘'            reduce using rule 40
 	L_Id           reduce using rule 40
 	L_Scalar       reduce using rule 40
 	%eof           reduce using rule 40
@@ -1033,21 +1048,26 @@ State 58
 	Expr2 -> Expr2 . Expr3                              (rule 39)
 	Expr1 -> Expr2 . '+' Expr1                          (rule 41)
 	Expr1 -> Expr2 . '-' Expr1                          (rule 42)
-	Expr1 -> Expr2 .                                    (rule 49)
+	Expr1 -> Expr2 . '$' Expr1                          (rule 43)
+	Expr1 -> Expr2 . '∘' Expr1                          (rule 44)
+	Expr1 -> Expr2 . '@' Expr1                          (rule 45)
+	Expr1 -> Expr2 .                                    (rule 52)
 
+	'$'            shift, and enter state 103
 	'('            shift, and enter state 63
-	')'            reduce using rule 49
-	'+'            shift, and enter state 103
-	','            reduce using rule 49
-	'-'            shift, and enter state 104
+	')'            reduce using rule 52
+	'+'            shift, and enter state 104
+	','            reduce using rule 52
+	'-'            shift, and enter state 105
 	'-i'           shift, and enter state 44
-	';'            reduce using rule 49
+	';'            reduce using rule 52
+	'@'            shift, and enter state 106
 	'e'            shift, and enter state 45
-	'else'         reduce using rule 49
+	'else'         reduce using rule 52
 	'i'            shift, and enter state 46
 	'pi'           shift, and enter state 47
-	'then'         reduce using rule 49
-	'}'            reduce using rule 49
+	'then'         reduce using rule 52
+	'}'            reduce using rule 52
 	'~+'           shift, and enter state 69
 	'~-'           shift, and enter state 70
 	'~0'           shift, and enter state 71
@@ -1055,9 +1075,10 @@ State 58
 	'~i'           shift, and enter state 73
 	'~j'           shift, and enter state 74
 	'π'            shift, and enter state 48
+	'∘'            shift, and enter state 107
 	L_Id           shift, and enter state 21
 	L_Scalar       shift, and enter state 49
-	%eof           reduce using rule 49
+	%eof           reduce using rule 52
 
 	Id             goto state 56
 	Scalar         goto state 39
@@ -1068,25 +1089,25 @@ State 58
 
 State 59
 
-	Expr -> Expr1 .                                     (rule 50)
+	Expr -> Expr1 .                                     (rule 53)
 
-	')'            reduce using rule 50
-	','            reduce using rule 50
-	';'            reduce using rule 50
-	'else'         reduce using rule 50
-	'then'         reduce using rule 50
-	'}'            reduce using rule 50
-	%eof           reduce using rule 50
+	')'            reduce using rule 53
+	','            reduce using rule 53
+	';'            reduce using rule 53
+	'else'         reduce using rule 53
+	'then'         reduce using rule 53
+	'}'            reduce using rule 53
+	%eof           reduce using rule 53
 
 
 State 60
 
-	ListExpr -> Expr .                                  (rule 52)
-	ListExpr -> Expr . ',' ListExpr                     (rule 53)
+	ListExpr -> Expr .                                  (rule 55)
+	ListExpr -> Expr . ',' ListExpr                     (rule 56)
 
-	')'            reduce using rule 52
+	')'            reduce using rule 55
 	','            shift, and enter state 102
-	%eof           reduce using rule 52
+	%eof           reduce using rule 55
 
 
 State 61
@@ -1107,10 +1128,10 @@ State 63
 
 	Expr3 -> '(' . ListExpr ')'                         (rule 36)
 	Expr3 -> '(' . Expr ')'                             (rule 38)
-	Complex2 -> '(' . Complex ')'                       (rule 66)
+	Complex2 -> '(' . Complex ')'                       (rule 69)
 
 	'('            shift, and enter state 63
-	')'            reduce using rule 51
+	')'            reduce using rule 54
 	'-i'           shift, and enter state 44
 	'\\'           shift, and enter state 64
 	'e'            shift, and enter state 45
@@ -1144,7 +1165,7 @@ State 63
 
 State 64
 
-	Expr1 -> '\\' . ListId '.' Expr                     (rule 48)
+	Expr1 -> '\\' . ListId '.' Expr                     (rule 51)
 
 	L_Id           shift, and enter state 21
 
@@ -1153,7 +1174,7 @@ State 64
 
 State 65
 
-	Expr1 -> 'if' . Expr 'then' Expr 'else' Expr        (rule 45)
+	Expr1 -> 'if' . Expr 'then' Expr 'else' Expr        (rule 48)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -1188,7 +1209,7 @@ State 65
 
 State 66
 
-	Expr1 -> 'if*' . Expr 'then' Expr 'else' Expr       (rule 44)
+	Expr1 -> 'if*' . Expr 'then' Expr 'else' Expr       (rule 47)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -1223,7 +1244,7 @@ State 66
 
 State 67
 
-	Expr1 -> 'if°' . Expr 'then' Expr 'else' Expr       (rule 43)
+	Expr1 -> 'if°' . Expr 'then' Expr 'else' Expr       (rule 46)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -1258,7 +1279,7 @@ State 67
 
 State 68
 
-	Expr1 -> 'let' . '{' ListLet '}' 'in' Expr          (rule 46)
+	Expr1 -> 'let' . '{' ListLet '}' 'in' Expr          (rule 49)
 
 	'{'            shift, and enter state 93
 
@@ -1267,6 +1288,7 @@ State 69
 
 	Expr3 -> '~+' .                                     (rule 32)
 
+	'$'            reduce using rule 32
 	'('            reduce using rule 32
 	')'            reduce using rule 32
 	'+'            reduce using rule 32
@@ -1274,6 +1296,7 @@ State 69
 	'-'            reduce using rule 32
 	'-i'           reduce using rule 32
 	';'            reduce using rule 32
+	'@'            reduce using rule 32
 	'e'            reduce using rule 32
 	'else'         reduce using rule 32
 	'i'            reduce using rule 32
@@ -1287,6 +1310,7 @@ State 69
 	'~i'           reduce using rule 32
 	'~j'           reduce using rule 32
 	'π'            reduce using rule 32
+	'∘'            reduce using rule 32
 	L_Id           reduce using rule 32
 	L_Scalar       reduce using rule 32
 	%eof           reduce using rule 32
@@ -1296,6 +1320,7 @@ State 70
 
 	Expr3 -> '~-' .                                     (rule 33)
 
+	'$'            reduce using rule 33
 	'('            reduce using rule 33
 	')'            reduce using rule 33
 	'+'            reduce using rule 33
@@ -1303,6 +1328,7 @@ State 70
 	'-'            reduce using rule 33
 	'-i'           reduce using rule 33
 	';'            reduce using rule 33
+	'@'            reduce using rule 33
 	'e'            reduce using rule 33
 	'else'         reduce using rule 33
 	'i'            reduce using rule 33
@@ -1316,6 +1342,7 @@ State 70
 	'~i'           reduce using rule 33
 	'~j'           reduce using rule 33
 	'π'            reduce using rule 33
+	'∘'            reduce using rule 33
 	L_Id           reduce using rule 33
 	L_Scalar       reduce using rule 33
 	%eof           reduce using rule 33
@@ -1325,6 +1352,7 @@ State 71
 
 	Expr3 -> '~0' .                                     (rule 31)
 
+	'$'            reduce using rule 31
 	'('            reduce using rule 31
 	')'            reduce using rule 31
 	'+'            reduce using rule 31
@@ -1332,6 +1360,7 @@ State 71
 	'-'            reduce using rule 31
 	'-i'           reduce using rule 31
 	';'            reduce using rule 31
+	'@'            reduce using rule 31
 	'e'            reduce using rule 31
 	'else'         reduce using rule 31
 	'i'            reduce using rule 31
@@ -1345,6 +1374,7 @@ State 71
 	'~i'           reduce using rule 31
 	'~j'           reduce using rule 31
 	'π'            reduce using rule 31
+	'∘'            reduce using rule 31
 	L_Id           reduce using rule 31
 	L_Scalar       reduce using rule 31
 	%eof           reduce using rule 31
@@ -1354,6 +1384,7 @@ State 72
 
 	Expr3 -> '~1' .                                     (rule 30)
 
+	'$'            reduce using rule 30
 	'('            reduce using rule 30
 	')'            reduce using rule 30
 	'+'            reduce using rule 30
@@ -1361,6 +1392,7 @@ State 72
 	'-'            reduce using rule 30
 	'-i'           reduce using rule 30
 	';'            reduce using rule 30
+	'@'            reduce using rule 30
 	'e'            reduce using rule 30
 	'else'         reduce using rule 30
 	'i'            reduce using rule 30
@@ -1374,6 +1406,7 @@ State 72
 	'~i'           reduce using rule 30
 	'~j'           reduce using rule 30
 	'π'            reduce using rule 30
+	'∘'            reduce using rule 30
 	L_Id           reduce using rule 30
 	L_Scalar       reduce using rule 30
 	%eof           reduce using rule 30
@@ -1383,6 +1416,7 @@ State 73
 
 	Expr3 -> '~i' .                                     (rule 34)
 
+	'$'            reduce using rule 34
 	'('            reduce using rule 34
 	')'            reduce using rule 34
 	'+'            reduce using rule 34
@@ -1390,6 +1424,7 @@ State 73
 	'-'            reduce using rule 34
 	'-i'           reduce using rule 34
 	';'            reduce using rule 34
+	'@'            reduce using rule 34
 	'e'            reduce using rule 34
 	'else'         reduce using rule 34
 	'i'            reduce using rule 34
@@ -1403,6 +1438,7 @@ State 73
 	'~i'           reduce using rule 34
 	'~j'           reduce using rule 34
 	'π'            reduce using rule 34
+	'∘'            reduce using rule 34
 	L_Id           reduce using rule 34
 	L_Scalar       reduce using rule 34
 	%eof           reduce using rule 34
@@ -1412,6 +1448,7 @@ State 74
 
 	Expr3 -> '~j' .                                     (rule 35)
 
+	'$'            reduce using rule 35
 	'('            reduce using rule 35
 	')'            reduce using rule 35
 	'+'            reduce using rule 35
@@ -1419,6 +1456,7 @@ State 74
 	'-'            reduce using rule 35
 	'-i'           reduce using rule 35
 	';'            reduce using rule 35
+	'@'            reduce using rule 35
 	'e'            reduce using rule 35
 	'else'         reduce using rule 35
 	'i'            reduce using rule 35
@@ -1432,6 +1470,7 @@ State 74
 	'~i'           reduce using rule 35
 	'~j'           reduce using rule 35
 	'π'            reduce using rule 35
+	'∘'            reduce using rule 35
 	L_Id           reduce using rule 35
 	L_Scalar       reduce using rule 35
 	%eof           reduce using rule 35
@@ -1439,7 +1478,7 @@ State 74
 
 State 75
 
-	Expr1 -> 'λ' . ListId '.' Expr                      (rule 47)
+	Expr1 -> 'λ' . ListId '.' Expr                      (rule 50)
 
 	L_Id           shift, and enter state 21
 
@@ -1573,7 +1612,7 @@ State 88
 	%eof           reduce using rule 23
 
 	Id             goto state 82
-	ListToplevel   goto state 148
+	ListToplevel   goto state 154
 	Toplevel       goto state 85
 
 State 89
@@ -1581,8 +1620,8 @@ State 89
 	Toplevel -> Id ListPattern . ':=' Expr              (rule 25)
 	Toplevel -> Id ListPattern . ':' Type ':=' Expr     (rule 26)
 
-	':'            shift, and enter state 146
-	':='           shift, and enter state 147
+	':'            shift, and enter state 152
+	':='           shift, and enter state 153
 
 
 State 90
@@ -1598,6 +1637,7 @@ State 91
 
 	Expr2 -> Expr2 Expr3 .                              (rule 39)
 
+	'$'            reduce using rule 39
 	'('            reduce using rule 39
 	')'            reduce using rule 39
 	'+'            reduce using rule 39
@@ -1605,6 +1645,7 @@ State 91
 	'-'            reduce using rule 39
 	'-i'           reduce using rule 39
 	';'            reduce using rule 39
+	'@'            reduce using rule 39
 	'e'            reduce using rule 39
 	'else'         reduce using rule 39
 	'i'            reduce using rule 39
@@ -1618,6 +1659,7 @@ State 91
 	'~i'           reduce using rule 39
 	'~j'           reduce using rule 39
 	'π'            reduce using rule 39
+	'∘'            reduce using rule 39
 	L_Id           reduce using rule 39
 	L_Scalar       reduce using rule 39
 	%eof           reduce using rule 39
@@ -1625,59 +1667,59 @@ State 91
 
 State 92
 
-	Expr1 -> 'λ' ListId . '.' Expr                      (rule 47)
+	Expr1 -> 'λ' ListId . '.' Expr                      (rule 50)
 
-	'.'            shift, and enter state 145
+	'.'            shift, and enter state 151
 
 
 State 93
 
-	Expr1 -> 'let' '{' . ListLet '}' 'in' Expr          (rule 46)
+	Expr1 -> 'let' '{' . ListLet '}' 'in' Expr          (rule 49)
 
 	'('            shift, and enter state 38
 	L_Id           shift, and enter state 21
 
 	Id             goto state 36
 	Let            goto state 52
-	ListLet        goto state 144
+	ListLet        goto state 150
 	Pattern        goto state 54
 
 State 94
 
-	Expr1 -> 'if°' Expr . 'then' Expr 'else' Expr       (rule 43)
+	Expr1 -> 'if°' Expr . 'then' Expr 'else' Expr       (rule 46)
 
-	'then'         shift, and enter state 143
+	'then'         shift, and enter state 149
 
 
 State 95
 
-	Expr1 -> 'if*' Expr . 'then' Expr 'else' Expr       (rule 44)
+	Expr1 -> 'if*' Expr . 'then' Expr 'else' Expr       (rule 47)
 
-	'then'         shift, and enter state 142
+	'then'         shift, and enter state 148
 
 
 State 96
 
-	Expr1 -> 'if' Expr . 'then' Expr 'else' Expr        (rule 45)
+	Expr1 -> 'if' Expr . 'then' Expr 'else' Expr        (rule 48)
 
-	'then'         shift, and enter state 141
+	'then'         shift, and enter state 147
 
 
 State 97
 
-	Expr1 -> '\\' ListId . '.' Expr                     (rule 48)
+	Expr1 -> '\\' ListId . '.' Expr                     (rule 51)
 
-	'.'            shift, and enter state 140
+	'.'            shift, and enter state 146
 
 
 State 98
 
 	Expr3 -> '(' Expr . ')'                             (rule 38)
-	ListExpr -> Expr .                                  (rule 52)
-	ListExpr -> Expr . ',' ListExpr                     (rule 53)
+	ListExpr -> Expr .                                  (rule 55)
+	ListExpr -> Expr . ',' ListExpr                     (rule 56)
 
-	')'            shift, and enter state 139
-			(reduce using rule 52)
+	')'            shift, and enter state 145
+			(reduce using rule 55)
 
 	','            shift, and enter state 102
 
@@ -1686,15 +1728,15 @@ State 99
 
 	Expr3 -> '(' ListExpr . ')'                         (rule 36)
 
-	')'            shift, and enter state 138
+	')'            shift, and enter state 144
 
 
 State 100
 
 	Expr3 -> Complex . '*' Expr3                        (rule 37)
-	Complex2 -> '(' Complex . ')'                       (rule 66)
+	Complex2 -> '(' Complex . ')'                       (rule 69)
 
-	')'            shift, and enter state 131
+	')'            shift, and enter state 134
 	'*'            shift, and enter state 101
 
 
@@ -1719,17 +1761,17 @@ State 101
 
 	Id             goto state 56
 	Scalar         goto state 39
-	Expr3          goto state 137
+	Expr3          goto state 143
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
 State 102
 
-	ListExpr -> Expr ',' . ListExpr                     (rule 53)
+	ListExpr -> Expr ',' . ListExpr                     (rule 56)
 
 	'('            shift, and enter state 63
-	')'            reduce using rule 51
+	')'            reduce using rule 54
 	'-i'           shift, and enter state 44
 	'\\'           shift, and enter state 64
 	'e'            shift, and enter state 45
@@ -1749,7 +1791,7 @@ State 102
 	'π'            shift, and enter state 48
 	L_Id           shift, and enter state 21
 	L_Scalar       shift, and enter state 49
-	%eof           reduce using rule 51
+	%eof           reduce using rule 54
 
 	Id             goto state 56
 	Scalar         goto state 39
@@ -1757,12 +1799,46 @@ State 102
 	Expr2          goto state 58
 	Expr1          goto state 59
 	Expr           goto state 60
-	ListExpr       goto state 136
+	ListExpr       goto state 142
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
 State 103
+
+	Expr1 -> Expr2 '$' . Expr1                          (rule 43)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 141
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 104
 
 	Expr1 -> Expr2 '+' . Expr1                          (rule 41)
 
@@ -1791,12 +1867,12 @@ State 103
 	Scalar         goto state 39
 	Expr3          goto state 57
 	Expr2          goto state 58
-	Expr1          goto state 135
+	Expr1          goto state 140
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 104
+State 105
 
 	Expr1 -> Expr2 '-' . Expr1                          (rule 42)
 
@@ -1825,14 +1901,82 @@ State 104
 	Scalar         goto state 39
 	Expr3          goto state 57
 	Expr2          goto state 58
-	Expr1          goto state 134
+	Expr1          goto state 139
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 105
+State 106
 
-	Let -> Pattern '=' . Expr                           (rule 54)
+	Expr1 -> Expr2 '@' . Expr1                          (rule 45)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 138
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 107
+
+	Expr1 -> Expr2 '∘' . Expr1                          (rule 44)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 137
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 108
+
+	Let -> Pattern '=' . Expr                           (rule 57)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -1860,58 +2004,42 @@ State 105
 	Expr3          goto state 57
 	Expr2          goto state 58
 	Expr1          goto state 59
-	Expr           goto state 133
+	Expr           goto state 136
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 106
+State 109
 
-	ListLet -> Let ';' . ListLet                        (rule 56)
+	ListLet -> Let ';' . ListLet                        (rule 59)
 
 	'('            shift, and enter state 38
 	L_Id           shift, and enter state 21
 
 	Id             goto state 36
 	Let            goto state 52
-	ListLet        goto state 132
+	ListLet        goto state 135
 	Pattern        goto state 54
-
-State 107
-
-	Complex2 -> '(' Complex . ')'                       (rule 66)
-
-	')'            shift, and enter state 131
-
-
-State 108
-
-	Complex1 -> Complex2 Complex1 .                     (rule 69)
-
-	')'            reduce using rule 69
-	'*'            reduce using rule 69
-	%eof           reduce using rule 69
-
-
-State 109
-
-	Complex1 -> Complex2 '/' . Complex1                 (rule 68)
-
-	'('            shift, and enter state 43
-	'-i'           shift, and enter state 44
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'pi'           shift, and enter state 47
-	'π'            shift, and enter state 48
-	L_Scalar       shift, and enter state 49
-
-	Scalar         goto state 39
-	Complex2       goto state 40
-	Complex1       goto state 130
 
 State 110
 
-	Complex1 -> Complex2 '^' . Complex1                 (rule 67)
+	Complex2 -> '(' Complex . ')'                       (rule 69)
+
+	')'            shift, and enter state 134
+
+
+State 111
+
+	Complex1 -> Complex2 Complex1 .                     (rule 72)
+
+	')'            reduce using rule 72
+	'*'            reduce using rule 72
+	%eof           reduce using rule 72
+
+
+State 112
+
+	Complex1 -> Complex2 '/' . Complex1                 (rule 71)
 
 	'('            shift, and enter state 43
 	'-i'           shift, and enter state 44
@@ -1923,147 +2051,150 @@ State 110
 
 	Scalar         goto state 39
 	Complex2       goto state 40
-	Complex1       goto state 129
-
-State 111
-
-	Complex2 -> Scalar '+' . Scalar 'i'                 (rule 57)
-
-	L_Scalar       shift, and enter state 49
-
-	Scalar         goto state 128
-
-State 112
-
-	Complex2 -> Scalar '-' . Scalar 'i'                 (rule 58)
-
-	L_Scalar       shift, and enter state 49
-
-	Scalar         goto state 127
+	Complex1       goto state 133
 
 State 113
 
-	Complex2 -> Scalar 'i' .                            (rule 60)
+	Complex1 -> Complex2 '^' . Complex1                 (rule 70)
 
-	'('            reduce using rule 60
-	')'            reduce using rule 60
-	'*'            reduce using rule 60
-	'-i'           reduce using rule 60
-	'/'            reduce using rule 60
-	'^'            reduce using rule 60
-	'e'            reduce using rule 60
-	'i'            reduce using rule 60
-	'pi'           reduce using rule 60
-	'π'            reduce using rule 60
-	L_Scalar       reduce using rule 60
-	%eof           reduce using rule 60
+	'('            shift, and enter state 43
+	'-i'           shift, and enter state 44
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'pi'           shift, and enter state 47
+	'π'            shift, and enter state 48
+	L_Scalar       shift, and enter state 49
 
+	Scalar         goto state 39
+	Complex2       goto state 40
+	Complex1       goto state 132
 
 State 114
 
-	Pattern -> '(' Id . ',' Id ')'                      (rule 73)
+	Complex2 -> Scalar '+' . Scalar 'i'                 (rule 60)
 
-	','            shift, and enter state 126
+	L_Scalar       shift, and enter state 49
 
+	Scalar         goto state 131
 
 State 115
 
-	Type -> '∀' ListId . '.' Mono                       (rule 82)
+	Complex2 -> Scalar '-' . Scalar 'i'                 (rule 61)
 
-	'.'            shift, and enter state 125
+	L_Scalar       shift, and enter state 49
 
+	Scalar         goto state 130
 
 State 116
 
-	Type -> 'forall' ListId . '.' Mono                  (rule 83)
+	Complex2 -> Scalar 'i' .                            (rule 63)
 
-	'.'            shift, and enter state 124
+	'('            reduce using rule 63
+	')'            reduce using rule 63
+	'*'            reduce using rule 63
+	'-i'           reduce using rule 63
+	'/'            reduce using rule 63
+	'^'            reduce using rule 63
+	'e'            reduce using rule 63
+	'i'            reduce using rule 63
+	'pi'           reduce using rule 63
+	'π'            reduce using rule 63
+	L_Scalar       reduce using rule 63
+	%eof           reduce using rule 63
 
 
 State 117
 
-	Mono2 -> '(' Mono . ')'                             (rule 76)
+	Pattern -> '(' Id . ',' Id ')'                      (rule 76)
 
-	')'            shift, and enter state 123
+	','            shift, and enter state 129
 
 
 State 118
 
-	Mono1 -> Mono2 '*' . Mono1                          (rule 77)
+	Type -> '∀' ListId . '.' Mono                       (rule 85)
 
-	'('            shift, and enter state 29
-	'qubit'        shift, and enter state 31
-	L_Id           shift, and enter state 21
+	'.'            shift, and enter state 128
 
-	Id             goto state 24
-	Mono2          goto state 25
-	Mono1          goto state 122
 
 State 119
 
-	Mono1 -> Mono2 '->' . Mono1                         (rule 78)
+	Type -> 'forall' ListId . '.' Mono                  (rule 86)
 
-	'('            shift, and enter state 29
-	'qubit'        shift, and enter state 31
-	L_Id           shift, and enter state 21
+	'.'            shift, and enter state 127
 
-	Id             goto state 24
-	Mono2          goto state 25
-	Mono1          goto state 121
 
 State 120
 
-	ListId -> Id ListId .                               (rule 85)
+	Mono2 -> '(' Mono . ')'                             (rule 79)
 
-	'.'            reduce using rule 85
-	%eof           reduce using rule 85
+	')'            shift, and enter state 126
 
 
 State 121
 
-	Mono1 -> Mono2 '->' Mono1 .                         (rule 78)
+	Mono1 -> Mono2 '*' . Mono1                          (rule 80)
 
-	')'            reduce using rule 78
-	':='           reduce using rule 78
-	%eof           reduce using rule 78
+	'('            shift, and enter state 29
+	'qubit'        shift, and enter state 31
+	L_Id           shift, and enter state 21
 
+	Id             goto state 24
+	Mono2          goto state 25
+	Mono1          goto state 125
 
 State 122
 
-	Mono1 -> Mono2 '*' Mono1 .                          (rule 77)
+	Mono1 -> Mono2 '->' . Mono1                         (rule 81)
 
-	')'            reduce using rule 77
-	':='           reduce using rule 77
-	%eof           reduce using rule 77
+	'('            shift, and enter state 29
+	'qubit'        shift, and enter state 31
+	L_Id           shift, and enter state 21
 
+	Id             goto state 24
+	Mono2          goto state 25
+	Mono1          goto state 124
 
 State 123
 
-	Mono2 -> '(' Mono ')' .                             (rule 76)
+	ListId -> Id ListId .                               (rule 88)
 
-	')'            reduce using rule 76
-	'*'            reduce using rule 76
-	'->'           reduce using rule 76
-	':='           reduce using rule 76
-	%eof           reduce using rule 76
+	'.'            reduce using rule 88
+	%eof           reduce using rule 88
 
 
 State 124
 
-	Type -> 'forall' ListId '.' . Mono                  (rule 83)
+	Mono1 -> Mono2 '->' Mono1 .                         (rule 81)
 
-	'('            shift, and enter state 29
-	'qubit'        shift, and enter state 31
-	L_Id           shift, and enter state 21
+	')'            reduce using rule 81
+	':='           reduce using rule 81
+	%eof           reduce using rule 81
 
-	Id             goto state 24
-	Mono2          goto state 25
-	Mono1          goto state 26
-	Mono           goto state 161
 
 State 125
 
-	Type -> '∀' ListId '.' . Mono                       (rule 82)
+	Mono1 -> Mono2 '*' Mono1 .                          (rule 80)
+
+	')'            reduce using rule 80
+	':='           reduce using rule 80
+	%eof           reduce using rule 80
+
+
+State 126
+
+	Mono2 -> '(' Mono ')' .                             (rule 79)
+
+	')'            reduce using rule 79
+	'*'            reduce using rule 79
+	'->'           reduce using rule 79
+	':='           reduce using rule 79
+	%eof           reduce using rule 79
+
+
+State 127
+
+	Type -> 'forall' ListId '.' . Mono                  (rule 86)
 
 	'('            shift, and enter state 29
 	'qubit'        shift, and enter state 31
@@ -2072,84 +2203,123 @@ State 125
 	Id             goto state 24
 	Mono2          goto state 25
 	Mono1          goto state 26
-	Mono           goto state 160
-
-State 126
-
-	Pattern -> '(' Id ',' . Id ')'                      (rule 73)
-
-	L_Id           shift, and enter state 21
-
-	Id             goto state 159
-
-State 127
-
-	Complex2 -> Scalar '-' Scalar . 'i'                 (rule 58)
-
-	'i'            shift, and enter state 158
-
+	Mono           goto state 167
 
 State 128
 
-	Complex2 -> Scalar '+' Scalar . 'i'                 (rule 57)
+	Type -> '∀' ListId '.' . Mono                       (rule 85)
 
-	'i'            shift, and enter state 157
+	'('            shift, and enter state 29
+	'qubit'        shift, and enter state 31
+	L_Id           shift, and enter state 21
 
+	Id             goto state 24
+	Mono2          goto state 25
+	Mono1          goto state 26
+	Mono           goto state 166
 
 State 129
 
-	Complex1 -> Complex2 '^' Complex1 .                 (rule 67)
+	Pattern -> '(' Id ',' . Id ')'                      (rule 76)
 
-	')'            reduce using rule 67
-	'*'            reduce using rule 67
-	%eof           reduce using rule 67
+	L_Id           shift, and enter state 21
 
+	Id             goto state 165
 
 State 130
 
-	Complex1 -> Complex2 '/' Complex1 .                 (rule 68)
+	Complex2 -> Scalar '-' Scalar . 'i'                 (rule 61)
 
-	')'            reduce using rule 68
-	'*'            reduce using rule 68
-	%eof           reduce using rule 68
+	'i'            shift, and enter state 164
 
 
 State 131
 
-	Complex2 -> '(' Complex ')' .                       (rule 66)
+	Complex2 -> Scalar '+' Scalar . 'i'                 (rule 60)
 
-	'('            reduce using rule 66
-	')'            reduce using rule 66
-	'*'            reduce using rule 66
-	'-i'           reduce using rule 66
-	'/'            reduce using rule 66
-	'^'            reduce using rule 66
-	'e'            reduce using rule 66
-	'i'            reduce using rule 66
-	'pi'           reduce using rule 66
-	'π'            reduce using rule 66
-	L_Scalar       reduce using rule 66
-	%eof           reduce using rule 66
+	'i'            shift, and enter state 163
 
 
 State 132
 
-	ListLet -> Let ';' ListLet .                        (rule 56)
+	Complex1 -> Complex2 '^' Complex1 .                 (rule 70)
 
-	'}'            reduce using rule 56
-	%eof           reduce using rule 56
+	')'            reduce using rule 70
+	'*'            reduce using rule 70
+	%eof           reduce using rule 70
 
 
 State 133
 
-	Let -> Pattern '=' Expr .                           (rule 54)
+	Complex1 -> Complex2 '/' Complex1 .                 (rule 71)
 
-	';'            reduce using rule 54
-	'}'            reduce using rule 54
-	%eof           reduce using rule 54
+	')'            reduce using rule 71
+	'*'            reduce using rule 71
+	%eof           reduce using rule 71
 
 
 State 134
+
+	Complex2 -> '(' Complex ')' .                       (rule 69)
+
+	'('            reduce using rule 69
+	')'            reduce using rule 69
+	'*'            reduce using rule 69
+	'-i'           reduce using rule 69
+	'/'            reduce using rule 69
+	'^'            reduce using rule 69
+	'e'            reduce using rule 69
+	'i'            reduce using rule 69
+	'pi'           reduce using rule 69
+	'π'            reduce using rule 69
+	L_Scalar       reduce using rule 69
+	%eof           reduce using rule 69
+
+
+State 135
+
+	ListLet -> Let ';' ListLet .                        (rule 59)
+
+	'}'            reduce using rule 59
+	%eof           reduce using rule 59
+
+
+State 136
+
+	Let -> Pattern '=' Expr .                           (rule 57)
+
+	';'            reduce using rule 57
+	'}'            reduce using rule 57
+	%eof           reduce using rule 57
+
+
+State 137
+
+	Expr1 -> Expr2 '∘' Expr1 .                          (rule 44)
+
+	')'            reduce using rule 44
+	','            reduce using rule 44
+	';'            reduce using rule 44
+	'else'         reduce using rule 44
+	'then'         reduce using rule 44
+	'}'            reduce using rule 44
+	%eof           reduce using rule 44
+
+
+State 138
+
+	Expr1 -> Expr2 '@' Expr1 .                          (rule 45)
+
+	')'            reduce using rule 45
+	','            reduce using rule 45
+	';'            reduce using rule 45
+	'else'         reduce using rule 45
+	'then'         reduce using rule 45
+	'}'            reduce using rule 45
+	%eof           reduce using rule 45
+
+
+State 139
 
 	Expr1 -> Expr2 '-' Expr1 .                          (rule 42)
 
@@ -2162,7 +2332,7 @@ State 134
 	%eof           reduce using rule 42
 
 
-State 135
+State 140
 
 	Expr1 -> Expr2 '+' Expr1 .                          (rule 41)
 
@@ -2175,18 +2345,32 @@ State 135
 	%eof           reduce using rule 41
 
 
-State 136
+State 141
 
-	ListExpr -> Expr ',' ListExpr .                     (rule 53)
+	Expr1 -> Expr2 '$' Expr1 .                          (rule 43)
 
-	')'            reduce using rule 53
-	%eof           reduce using rule 53
+	')'            reduce using rule 43
+	','            reduce using rule 43
+	';'            reduce using rule 43
+	'else'         reduce using rule 43
+	'then'         reduce using rule 43
+	'}'            reduce using rule 43
+	%eof           reduce using rule 43
 
 
-State 137
+State 142
+
+	ListExpr -> Expr ',' ListExpr .                     (rule 56)
+
+	')'            reduce using rule 56
+	%eof           reduce using rule 56
+
+
+State 143
 
 	Expr3 -> Complex '*' Expr3 .                        (rule 37)
 
+	'$'            reduce using rule 37
 	'('            reduce using rule 37
 	')'            reduce using rule 37
 	'+'            reduce using rule 37
@@ -2194,6 +2378,7 @@ State 137
 	'-'            reduce using rule 37
 	'-i'           reduce using rule 37
 	';'            reduce using rule 37
+	'@'            reduce using rule 37
 	'e'            reduce using rule 37
 	'else'         reduce using rule 37
 	'i'            reduce using rule 37
@@ -2207,15 +2392,17 @@ State 137
 	'~i'           reduce using rule 37
 	'~j'           reduce using rule 37
 	'π'            reduce using rule 37
+	'∘'            reduce using rule 37
 	L_Id           reduce using rule 37
 	L_Scalar       reduce using rule 37
 	%eof           reduce using rule 37
 
 
-State 138
+State 144
 
 	Expr3 -> '(' ListExpr ')' .                         (rule 36)
 
+	'$'            reduce using rule 36
 	'('            reduce using rule 36
 	')'            reduce using rule 36
 	'+'            reduce using rule 36
@@ -2223,6 +2410,7 @@ State 138
 	'-'            reduce using rule 36
 	'-i'           reduce using rule 36
 	';'            reduce using rule 36
+	'@'            reduce using rule 36
 	'e'            reduce using rule 36
 	'else'         reduce using rule 36
 	'i'            reduce using rule 36
@@ -2236,15 +2424,17 @@ State 138
 	'~i'           reduce using rule 36
 	'~j'           reduce using rule 36
 	'π'            reduce using rule 36
+	'∘'            reduce using rule 36
 	L_Id           reduce using rule 36
 	L_Scalar       reduce using rule 36
 	%eof           reduce using rule 36
 
 
-State 139
+State 145
 
 	Expr3 -> '(' Expr ')' .                             (rule 38)
 
+	'$'            reduce using rule 38
 	'('            reduce using rule 38
 	')'            reduce using rule 38
 	'+'            reduce using rule 38
@@ -2252,6 +2442,7 @@ State 139
 	'-'            reduce using rule 38
 	'-i'           reduce using rule 38
 	';'            reduce using rule 38
+	'@'            reduce using rule 38
 	'e'            reduce using rule 38
 	'else'         reduce using rule 38
 	'i'            reduce using rule 38
@@ -2265,14 +2456,15 @@ State 139
 	'~i'           reduce using rule 38
 	'~j'           reduce using rule 38
 	'π'            reduce using rule 38
+	'∘'            reduce using rule 38
 	L_Id           reduce using rule 38
 	L_Scalar       reduce using rule 38
 	%eof           reduce using rule 38
 
 
-State 140
+State 146
 
-	Expr1 -> '\\' ListId '.' . Expr                     (rule 48)
+	Expr1 -> '\\' ListId '.' . Expr                     (rule 51)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -2300,14 +2492,177 @@ State 140
 	Expr3          goto state 57
 	Expr2          goto state 58
 	Expr1          goto state 59
-	Expr           goto state 156
+	Expr           goto state 162
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 141
+State 147
 
-	Expr1 -> 'if' Expr 'then' . Expr 'else' Expr        (rule 45)
+	Expr1 -> 'if' Expr 'then' . Expr 'else' Expr        (rule 48)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 161
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 148
+
+	Expr1 -> 'if*' Expr 'then' . Expr 'else' Expr       (rule 47)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 160
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 149
+
+	Expr1 -> 'if°' Expr 'then' . Expr 'else' Expr       (rule 46)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 159
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 150
+
+	Expr1 -> 'let' '{' ListLet . '}' 'in' Expr          (rule 49)
+
+	'}'            shift, and enter state 158
+
+
+State 151
+
+	Expr1 -> 'λ' ListId '.' . Expr                      (rule 50)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 157
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 152
+
+	Toplevel -> Id ListPattern ':' . Type ':=' Expr     (rule 26)
+
+	'('            shift, and enter state 29
+	'forall'       shift, and enter state 30
+	'qubit'        shift, and enter state 31
+	'∀'            shift, and enter state 32
+	L_Id           shift, and enter state 21
+
+	Id             goto state 24
+	Mono2          goto state 25
+	Mono1          goto state 26
+	Mono           goto state 27
+	Type           goto state 156
+
+State 153
+
+	Toplevel -> Id ListPattern ':=' . Expr              (rule 25)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -2340,177 +2695,14 @@ State 141
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 142
-
-	Expr1 -> 'if*' Expr 'then' . Expr 'else' Expr       (rule 44)
-
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
-
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 154
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
-
-State 143
-
-	Expr1 -> 'if°' Expr 'then' . Expr 'else' Expr       (rule 43)
-
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
-
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 153
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
-
-State 144
-
-	Expr1 -> 'let' '{' ListLet . '}' 'in' Expr          (rule 46)
-
-	'}'            shift, and enter state 152
-
-
-State 145
-
-	Expr1 -> 'λ' ListId '.' . Expr                      (rule 47)
-
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
-
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 151
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
-
-State 146
-
-	Toplevel -> Id ListPattern ':' . Type ':=' Expr     (rule 26)
-
-	'('            shift, and enter state 29
-	'forall'       shift, and enter state 30
-	'qubit'        shift, and enter state 31
-	'∀'            shift, and enter state 32
-	L_Id           shift, and enter state 21
-
-	Id             goto state 24
-	Mono2          goto state 25
-	Mono1          goto state 26
-	Mono           goto state 27
-	Type           goto state 150
-
-State 147
-
-	Toplevel -> Id ListPattern ':=' . Expr              (rule 25)
-
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
-
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 149
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
-
-State 148
+State 154
 
 	ListToplevel -> Toplevel ';' ListToplevel .         (rule 24)
 
 	%eof           reduce using rule 24
 
 
-State 149
+State 155
 
 	Toplevel -> Id ListPattern ':=' Expr .              (rule 25)
 
@@ -2518,246 +2710,141 @@ State 149
 	%eof           reduce using rule 25
 
 
-State 150
+State 156
 
 	Toplevel -> Id ListPattern ':' Type . ':=' Expr     (rule 26)
 
-	':='           shift, and enter state 167
-
-
-State 151
-
-	Expr1 -> 'λ' ListId '.' Expr .                      (rule 47)
-
-	')'            reduce using rule 47
-	','            reduce using rule 47
-	';'            reduce using rule 47
-	'else'         reduce using rule 47
-	'then'         reduce using rule 47
-	'}'            reduce using rule 47
-	%eof           reduce using rule 47
-
-
-State 152
-
-	Expr1 -> 'let' '{' ListLet '}' . 'in' Expr          (rule 46)
-
-	'in'           shift, and enter state 166
-
-
-State 153
-
-	Expr1 -> 'if°' Expr 'then' Expr . 'else' Expr       (rule 43)
-
-	'else'         shift, and enter state 165
-
-
-State 154
-
-	Expr1 -> 'if*' Expr 'then' Expr . 'else' Expr       (rule 44)
-
-	'else'         shift, and enter state 164
-
-
-State 155
-
-	Expr1 -> 'if' Expr 'then' Expr . 'else' Expr        (rule 45)
-
-	'else'         shift, and enter state 163
-
-
-State 156
-
-	Expr1 -> '\\' ListId '.' Expr .                     (rule 48)
-
-	')'            reduce using rule 48
-	','            reduce using rule 48
-	';'            reduce using rule 48
-	'else'         reduce using rule 48
-	'then'         reduce using rule 48
-	'}'            reduce using rule 48
-	%eof           reduce using rule 48
+	':='           shift, and enter state 173
 
 
 State 157
 
-	Complex2 -> Scalar '+' Scalar 'i' .                 (rule 57)
+	Expr1 -> 'λ' ListId '.' Expr .                      (rule 50)
 
-	'('            reduce using rule 57
-	')'            reduce using rule 57
-	'*'            reduce using rule 57
-	'-i'           reduce using rule 57
-	'/'            reduce using rule 57
-	'^'            reduce using rule 57
-	'e'            reduce using rule 57
-	'i'            reduce using rule 57
-	'pi'           reduce using rule 57
-	'π'            reduce using rule 57
-	L_Scalar       reduce using rule 57
-	%eof           reduce using rule 57
+	')'            reduce using rule 50
+	','            reduce using rule 50
+	';'            reduce using rule 50
+	'else'         reduce using rule 50
+	'then'         reduce using rule 50
+	'}'            reduce using rule 50
+	%eof           reduce using rule 50
 
 
 State 158
 
-	Complex2 -> Scalar '-' Scalar 'i' .                 (rule 58)
+	Expr1 -> 'let' '{' ListLet '}' . 'in' Expr          (rule 49)
 
-	'('            reduce using rule 58
-	')'            reduce using rule 58
-	'*'            reduce using rule 58
-	'-i'           reduce using rule 58
-	'/'            reduce using rule 58
-	'^'            reduce using rule 58
-	'e'            reduce using rule 58
-	'i'            reduce using rule 58
-	'pi'           reduce using rule 58
-	'π'            reduce using rule 58
-	L_Scalar       reduce using rule 58
-	%eof           reduce using rule 58
+	'in'           shift, and enter state 172
 
 
 State 159
 
-	Pattern -> '(' Id ',' Id . ')'                      (rule 73)
+	Expr1 -> 'if°' Expr 'then' Expr . 'else' Expr       (rule 46)
 
-	')'            shift, and enter state 162
+	'else'         shift, and enter state 171
 
 
 State 160
 
-	Type -> '∀' ListId '.' Mono .                       (rule 82)
+	Expr1 -> 'if*' Expr 'then' Expr . 'else' Expr       (rule 47)
 
-	':='           reduce using rule 82
-	%eof           reduce using rule 82
+	'else'         shift, and enter state 170
 
 
 State 161
 
-	Type -> 'forall' ListId '.' Mono .                  (rule 83)
+	Expr1 -> 'if' Expr 'then' Expr . 'else' Expr        (rule 48)
 
-	':='           reduce using rule 83
-	%eof           reduce using rule 83
+	'else'         shift, and enter state 169
 
 
 State 162
 
-	Pattern -> '(' Id ',' Id ')' .                      (rule 73)
+	Expr1 -> '\\' ListId '.' Expr .                     (rule 51)
 
-	'('            reduce using rule 73
-	':'            reduce using rule 73
-	':='           reduce using rule 73
-	'='            reduce using rule 73
-	L_Id           reduce using rule 73
-	%eof           reduce using rule 73
+	')'            reduce using rule 51
+	','            reduce using rule 51
+	';'            reduce using rule 51
+	'else'         reduce using rule 51
+	'then'         reduce using rule 51
+	'}'            reduce using rule 51
+	%eof           reduce using rule 51
 
 
 State 163
 
-	Expr1 -> 'if' Expr 'then' Expr 'else' . Expr        (rule 45)
+	Complex2 -> Scalar '+' Scalar 'i' .                 (rule 60)
 
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
+	'('            reduce using rule 60
+	')'            reduce using rule 60
+	'*'            reduce using rule 60
+	'-i'           reduce using rule 60
+	'/'            reduce using rule 60
+	'^'            reduce using rule 60
+	'e'            reduce using rule 60
+	'i'            reduce using rule 60
+	'pi'           reduce using rule 60
+	'π'            reduce using rule 60
+	L_Scalar       reduce using rule 60
+	%eof           reduce using rule 60
 
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 172
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
 
 State 164
 
-	Expr1 -> 'if*' Expr 'then' Expr 'else' . Expr       (rule 44)
+	Complex2 -> Scalar '-' Scalar 'i' .                 (rule 61)
 
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
+	'('            reduce using rule 61
+	')'            reduce using rule 61
+	'*'            reduce using rule 61
+	'-i'           reduce using rule 61
+	'/'            reduce using rule 61
+	'^'            reduce using rule 61
+	'e'            reduce using rule 61
+	'i'            reduce using rule 61
+	'pi'           reduce using rule 61
+	'π'            reduce using rule 61
+	L_Scalar       reduce using rule 61
+	%eof           reduce using rule 61
 
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 171
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
 
 State 165
 
-	Expr1 -> 'if°' Expr 'then' Expr 'else' . Expr       (rule 43)
+	Pattern -> '(' Id ',' Id . ')'                      (rule 76)
 
-	'('            shift, and enter state 63
-	'-i'           shift, and enter state 44
-	'\\'           shift, and enter state 64
-	'e'            shift, and enter state 45
-	'i'            shift, and enter state 46
-	'if'           shift, and enter state 65
-	'if*'          shift, and enter state 66
-	'if°'          shift, and enter state 67
-	'let'          shift, and enter state 68
-	'pi'           shift, and enter state 47
-	'~+'           shift, and enter state 69
-	'~-'           shift, and enter state 70
-	'~0'           shift, and enter state 71
-	'~1'           shift, and enter state 72
-	'~i'           shift, and enter state 73
-	'~j'           shift, and enter state 74
-	'λ'            shift, and enter state 75
-	'π'            shift, and enter state 48
-	L_Id           shift, and enter state 21
-	L_Scalar       shift, and enter state 49
+	')'            shift, and enter state 168
 
-	Id             goto state 56
-	Scalar         goto state 39
-	Expr3          goto state 57
-	Expr2          goto state 58
-	Expr1          goto state 59
-	Expr           goto state 170
-	Complex2       goto state 40
-	Complex1       goto state 41
-	Complex        goto state 62
 
 State 166
 
-	Expr1 -> 'let' '{' ListLet '}' 'in' . Expr          (rule 46)
+	Type -> '∀' ListId '.' Mono .                       (rule 85)
+
+	':='           reduce using rule 85
+	%eof           reduce using rule 85
+
+
+State 167
+
+	Type -> 'forall' ListId '.' Mono .                  (rule 86)
+
+	':='           reduce using rule 86
+	%eof           reduce using rule 86
+
+
+State 168
+
+	Pattern -> '(' Id ',' Id ')' .                      (rule 76)
+
+	'('            reduce using rule 76
+	':'            reduce using rule 76
+	':='           reduce using rule 76
+	'='            reduce using rule 76
+	L_Id           reduce using rule 76
+	%eof           reduce using rule 76
+
+
+State 169
+
+	Expr1 -> 'if' Expr 'then' Expr 'else' . Expr        (rule 48)
 
 	'('            shift, and enter state 63
 	'-i'           shift, and enter state 44
@@ -2785,12 +2872,117 @@ State 166
 	Expr3          goto state 57
 	Expr2          goto state 58
 	Expr1          goto state 59
-	Expr           goto state 169
+	Expr           goto state 178
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 167
+State 170
+
+	Expr1 -> 'if*' Expr 'then' Expr 'else' . Expr       (rule 47)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 177
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 171
+
+	Expr1 -> 'if°' Expr 'then' Expr 'else' . Expr       (rule 46)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 176
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 172
+
+	Expr1 -> 'let' '{' ListLet '}' 'in' . Expr          (rule 49)
+
+	'('            shift, and enter state 63
+	'-i'           shift, and enter state 44
+	'\\'           shift, and enter state 64
+	'e'            shift, and enter state 45
+	'i'            shift, and enter state 46
+	'if'           shift, and enter state 65
+	'if*'          shift, and enter state 66
+	'if°'          shift, and enter state 67
+	'let'          shift, and enter state 68
+	'pi'           shift, and enter state 47
+	'~+'           shift, and enter state 69
+	'~-'           shift, and enter state 70
+	'~0'           shift, and enter state 71
+	'~1'           shift, and enter state 72
+	'~i'           shift, and enter state 73
+	'~j'           shift, and enter state 74
+	'λ'            shift, and enter state 75
+	'π'            shift, and enter state 48
+	L_Id           shift, and enter state 21
+	L_Scalar       shift, and enter state 49
+
+	Id             goto state 56
+	Scalar         goto state 39
+	Expr3          goto state 57
+	Expr2          goto state 58
+	Expr1          goto state 59
+	Expr           goto state 175
+	Complex2       goto state 40
+	Complex1       goto state 41
+	Complex        goto state 62
+
+State 173
 
 	Toplevel -> Id ListPattern ':' Type ':=' . Expr     (rule 26)
 
@@ -2820,12 +3012,12 @@ State 167
 	Expr3          goto state 57
 	Expr2          goto state 58
 	Expr1          goto state 59
-	Expr           goto state 168
+	Expr           goto state 174
 	Complex2       goto state 40
 	Complex1       goto state 41
 	Complex        goto state 62
 
-State 168
+State 174
 
 	Toplevel -> Id ListPattern ':' Type ':=' Expr .     (rule 26)
 
@@ -2833,9 +3025,22 @@ State 168
 	%eof           reduce using rule 26
 
 
-State 169
+State 175
 
-	Expr1 -> 'let' '{' ListLet '}' 'in' Expr .          (rule 46)
+	Expr1 -> 'let' '{' ListLet '}' 'in' Expr .          (rule 49)
+
+	')'            reduce using rule 49
+	','            reduce using rule 49
+	';'            reduce using rule 49
+	'else'         reduce using rule 49
+	'then'         reduce using rule 49
+	'}'            reduce using rule 49
+	%eof           reduce using rule 49
+
+
+State 176
+
+	Expr1 -> 'if°' Expr 'then' Expr 'else' Expr .       (rule 46)
 
 	')'            reduce using rule 46
 	','            reduce using rule 46
@@ -2846,49 +3051,36 @@ State 169
 	%eof           reduce using rule 46
 
 
-State 170
+State 177
 
-	Expr1 -> 'if°' Expr 'then' Expr 'else' Expr .       (rule 43)
+	Expr1 -> 'if*' Expr 'then' Expr 'else' Expr .       (rule 47)
 
-	')'            reduce using rule 43
-	','            reduce using rule 43
-	';'            reduce using rule 43
-	'else'         reduce using rule 43
-	'then'         reduce using rule 43
-	'}'            reduce using rule 43
-	%eof           reduce using rule 43
-
-
-State 171
-
-	Expr1 -> 'if*' Expr 'then' Expr 'else' Expr .       (rule 44)
-
-	')'            reduce using rule 44
-	','            reduce using rule 44
-	';'            reduce using rule 44
-	'else'         reduce using rule 44
-	'then'         reduce using rule 44
-	'}'            reduce using rule 44
-	%eof           reduce using rule 44
+	')'            reduce using rule 47
+	','            reduce using rule 47
+	';'            reduce using rule 47
+	'else'         reduce using rule 47
+	'then'         reduce using rule 47
+	'}'            reduce using rule 47
+	%eof           reduce using rule 47
 
 
-State 172
+State 178
 
-	Expr1 -> 'if' Expr 'then' Expr 'else' Expr .        (rule 45)
+	Expr1 -> 'if' Expr 'then' Expr 'else' Expr .        (rule 48)
 
-	')'            reduce using rule 45
-	','            reduce using rule 45
-	';'            reduce using rule 45
-	'else'         reduce using rule 45
-	'then'         reduce using rule 45
-	'}'            reduce using rule 45
-	%eof           reduce using rule 45
+	')'            reduce using rule 48
+	','            reduce using rule 48
+	';'            reduce using rule 48
+	'else'         reduce using rule 48
+	'then'         reduce using rule 48
+	'}'            reduce using rule 48
+	%eof           reduce using rule 48
 
 
 -----------------------------------------------------------------------------
 Grammar Totals
 -----------------------------------------------------------------------------
-Number of rules: 86
-Number of terminals: 41
+Number of rules: 89
+Number of terminals: 44
 Number of non-terminals: 42
-Number of states: 173
+Number of states: 179

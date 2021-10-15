@@ -131,7 +131,6 @@ instance Print Frontend.Signe.Abs.Expr where
     Frontend.Signe.Abs.EMul complex expr -> prPrec i 3 (concatD [prt 0 complex, doc (showString "*"), prt 3 expr])
     Frontend.Signe.Abs.EApp expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, prt 3 expr2])
     Frontend.Signe.Abs.EPlus expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "+"), prt 1 expr2])
-    Frontend.Signe.Abs.EComp expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "\8728"), prt 1 expr2])
     Frontend.Signe.Abs.EIfq expr1 expr2 expr3 -> prPrec i 1 (concatD [doc (showString "if\176"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     Frontend.Signe.Abs.EIf expr1 expr2 expr3 -> prPrec i 1 (concatD [doc (showString "if"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     Frontend.Signe.Abs.ELet lets expr -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "{"), prt 0 lets, doc (showString "}"), doc (showString "in"), prt 0 expr])

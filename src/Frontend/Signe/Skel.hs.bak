@@ -32,7 +32,6 @@ transExpr x = case x of
   Frontend.Signe.Abs.EMul complex expr -> failure x
   Frontend.Signe.Abs.EApp expr1 expr2 -> failure x
   Frontend.Signe.Abs.EPlus expr1 expr2 -> failure x
-  Frontend.Signe.Abs.EComp expr1 expr2 -> failure x
   Frontend.Signe.Abs.EIfq expr1 expr2 expr3 -> failure x
   Frontend.Signe.Abs.EIf expr1 expr2 expr3 -> failure x
   Frontend.Signe.Abs.ELet lets expr -> failure x

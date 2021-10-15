@@ -53,45 +53,48 @@ import Frontend.Signe.Lex
 %monad { Either String } { (>>=) } { return }
 %tokentype {Token}
 %token
-  '(' { PT _ (TS _ 1) }
-  ')' { PT _ (TS _ 2) }
-  '*' { PT _ (TS _ 3) }
-  '+' { PT _ (TS _ 4) }
-  ',' { PT _ (TS _ 5) }
-  '-' { PT _ (TS _ 6) }
-  '->' { PT _ (TS _ 7) }
-  '-i' { PT _ (TS _ 8) }
-  '.' { PT _ (TS _ 9) }
-  '/' { PT _ (TS _ 10) }
-  ':' { PT _ (TS _ 11) }
-  ':=' { PT _ (TS _ 12) }
-  ';' { PT _ (TS _ 13) }
-  '=' { PT _ (TS _ 14) }
-  '\\' { PT _ (TS _ 15) }
-  '^' { PT _ (TS _ 16) }
-  'e' { PT _ (TS _ 17) }
-  'else' { PT _ (TS _ 18) }
-  'forall' { PT _ (TS _ 19) }
-  'i' { PT _ (TS _ 20) }
-  'if' { PT _ (TS _ 21) }
-  'if*' { PT _ (TS _ 22) }
-  'if°' { PT _ (TS _ 23) }
-  'in' { PT _ (TS _ 24) }
-  'let' { PT _ (TS _ 25) }
-  'pi' { PT _ (TS _ 26) }
-  'qubit' { PT _ (TS _ 27) }
-  'then' { PT _ (TS _ 28) }
-  '{' { PT _ (TS _ 29) }
-  '}' { PT _ (TS _ 30) }
-  '~+' { PT _ (TS _ 31) }
-  '~-' { PT _ (TS _ 32) }
-  '~0' { PT _ (TS _ 33) }
-  '~1' { PT _ (TS _ 34) }
-  '~i' { PT _ (TS _ 35) }
-  '~j' { PT _ (TS _ 36) }
-  'λ' { PT _ (TS _ 37) }
-  'π' { PT _ (TS _ 38) }
-  '∀' { PT _ (TS _ 39) }
+  '$' { PT _ (TS _ 1) }
+  '(' { PT _ (TS _ 2) }
+  ')' { PT _ (TS _ 3) }
+  '*' { PT _ (TS _ 4) }
+  '+' { PT _ (TS _ 5) }
+  ',' { PT _ (TS _ 6) }
+  '-' { PT _ (TS _ 7) }
+  '->' { PT _ (TS _ 8) }
+  '-i' { PT _ (TS _ 9) }
+  '.' { PT _ (TS _ 10) }
+  '/' { PT _ (TS _ 11) }
+  ':' { PT _ (TS _ 12) }
+  ':=' { PT _ (TS _ 13) }
+  ';' { PT _ (TS _ 14) }
+  '=' { PT _ (TS _ 15) }
+  '@' { PT _ (TS _ 16) }
+  '\\' { PT _ (TS _ 17) }
+  '^' { PT _ (TS _ 18) }
+  'e' { PT _ (TS _ 19) }
+  'else' { PT _ (TS _ 20) }
+  'forall' { PT _ (TS _ 21) }
+  'i' { PT _ (TS _ 22) }
+  'if' { PT _ (TS _ 23) }
+  'if*' { PT _ (TS _ 24) }
+  'if°' { PT _ (TS _ 25) }
+  'in' { PT _ (TS _ 26) }
+  'let' { PT _ (TS _ 27) }
+  'pi' { PT _ (TS _ 28) }
+  'qubit' { PT _ (TS _ 29) }
+  'then' { PT _ (TS _ 30) }
+  '{' { PT _ (TS _ 31) }
+  '}' { PT _ (TS _ 32) }
+  '~+' { PT _ (TS _ 33) }
+  '~-' { PT _ (TS _ 34) }
+  '~0' { PT _ (TS _ 35) }
+  '~1' { PT _ (TS _ 36) }
+  '~i' { PT _ (TS _ 37) }
+  '~j' { PT _ (TS _ 38) }
+  'λ' { PT _ (TS _ 39) }
+  'π' { PT _ (TS _ 40) }
+  '∀' { PT _ (TS _ 41) }
+  '∘' { PT _ (TS _ 42) }
   L_Id { PT _ (T_Id _) }
   L_Scalar { PT _ (T_Scalar $$) }
 
@@ -137,6 +140,9 @@ Expr2 : Expr2 Expr3 { Frontend.Signe.Abs.EApp $1 $2 }
 Expr1 :: { Frontend.Signe.Abs.Expr }
 Expr1 : Expr2 '+' Expr1 { Frontend.Signe.Abs.EPlus $1 $3 }
       | Expr2 '-' Expr1 { Frontend.Signe.Abs.emin $1 $3 }
+      | Expr2 '$' Expr1 { Frontend.Signe.Abs.edolr $1 $3 }
+      | Expr2 '∘' Expr1 { Frontend.Signe.Abs.EComp $1 $3 }
+      | Expr2 '@' Expr1 { Frontend.Signe.Abs.ecomps $1 $3 }
       | 'if°' Expr 'then' Expr 'else' Expr { Frontend.Signe.Abs.EIfq $2 $4 $6 }
       | 'if*' Expr 'then' Expr 'else' Expr { Frontend.Signe.Abs.eifqs $2 $4 $6 }
       | 'if' Expr 'then' Expr 'else' Expr { Frontend.Signe.Abs.EIf $2 $4 $6 }

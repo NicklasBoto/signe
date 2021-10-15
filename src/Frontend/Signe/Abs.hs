@@ -30,6 +30,7 @@ data Expr
     | EMul Complex Expr
     | EApp Expr Expr
     | EPlus Expr Expr
+    | EComp Expr Expr
     | EIfq Expr Expr Expr
     | EIf Expr Expr Expr
     | ELet [Let] Expr
@@ -72,6 +73,12 @@ qimagj = EMul cnmag EFalse
 
 emin :: Expr -> Expr -> Expr
 emin x y = EPlus x (EMul (creal (Scalar "-1")) y)
+
+edolr :: Expr -> Expr -> Expr
+edolr a b = EApp a b
+
+ecomps :: Expr -> Expr -> Expr
+ecomps a b = EComp a b
 
 eifqs :: Expr -> Expr -> Expr -> Expr
 eifqs c t f = EIfq c t f

@@ -153,7 +153,13 @@ instance Print [Frontend.Signe.Abs.Let] where
 
 instance Print Frontend.Signe.Abs.Complex where
   prt i e = case e of
-    Frontend.Signe.Abs.CComp scalar1 scalar2 -> prPrec i 0 (concatD [prt 0 scalar1, doc (showString "+"), prt 0 scalar2, doc (showString "j")])
+    Frontend.Signe.Abs.CComp scalar1 scalar2 -> prPrec i 2 (concatD [prt 0 scalar1, doc (showString "+"), prt 0 scalar2, doc (showString "i")])
+    Frontend.Signe.Abs.CComn scalar1 scalar2 -> prPrec i 2 (concatD [prt 0 scalar1, doc (showString "-"), prt 0 scalar2, doc (showString "i")])
+    Frontend.Signe.Abs.CPi -> prPrec i 2 (concatD [doc (showString "\960")])
+    Frontend.Signe.Abs.CE -> prPrec i 2 (concatD [doc (showString "e")])
+    Frontend.Signe.Abs.CExp complex1 complex2 -> prPrec i 1 (concatD [prt 2 complex1, doc (showString "^"), prt 1 complex2])
+    Frontend.Signe.Abs.CDiv complex1 complex2 -> prPrec i 1 (concatD [prt 2 complex1, doc (showString "/"), prt 1 complex2])
+    Frontend.Signe.Abs.CMul complex1 complex2 -> prPrec i 1 (concatD [prt 2 complex1, prt 1 complex2])
 
 instance Print Frontend.Signe.Abs.Pattern where
   prt i e = case e of

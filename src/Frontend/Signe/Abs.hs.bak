@@ -15,9 +15,6 @@ newtype Id = Id ((Int, Int), String)
 newtype Scalar = Scalar String
   deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
 
-newtype TId = TId ((Int, Int), String)
-  deriving (C.Eq, C.Ord, C.Show, C.Read)
-
 data Program = Progr [Toplevel]
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
@@ -33,6 +30,7 @@ data Expr
     | EMul Complex Expr
     | EApp Expr Expr
     | EPlus Expr Expr
+    | EComp Expr Expr
     | EIfq Expr Expr Expr
     | EIf Expr Expr Expr
     | ELet [Let] Expr
@@ -42,16 +40,23 @@ data Expr
 data Let = LLet Pattern Expr
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data Complex = CComp Scalar Scalar
+data Complex
+    = CComp Scalar Scalar
+    | CComn Scalar Scalar
+    | CPi
+    | CE
+    | CExp Complex Complex
+    | CDiv Complex Complex
+    | CMul Complex Complex
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Pattern = PVar Id | PTup Id Id
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data Mono = MVar TId | MQubit | MTens Mono Mono | MArrow Mono Mono
+data Mono = MVar Id | MQubit | MTens Mono Mono | MArrow Mono Mono
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data Type = TMono Mono | TPoly [TId] Mono
+data Type = TMono Mono | TPoly [Id] Mono
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 qplus :: Expr
@@ -68,6 +73,12 @@ qimagj = EMul cnmag EFalse
 
 emin :: Expr -> Expr -> Expr
 emin x y = EPlus x (EMul (creal (Scalar "-1")) y)
+
+edlr :: Expr -> Expr -> Expr
+edlr a b = EApp a b
+
+ecomps :: Expr -> Expr -> Expr
+ecomps a b = EComp a b
 
 eifqs :: Expr -> Expr -> Expr -> Expr
 eifqs c t f = EIfq c t f
@@ -87,6 +98,9 @@ cnmag = CComp (Scalar "0") (Scalar "-1")
 cjmag :: Complex
 cjmag = CComp (Scalar "0") (Scalar "1")
 
-tpolys :: [TId] -> Mono -> Type
+cpis :: Complex
+cpis = CPi
+
+tpolys :: [Id] -> Mono -> Type
 tpolys c t = TPoly c t
 

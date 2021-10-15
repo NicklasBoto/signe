@@ -26,9 +26,9 @@ Scalar literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Signe are the following:
-  | ``else`` | ``forall`` | ``if`` | ``in``
-  | ``j`` | ``let`` | ``qubit`` | ``then``
-  | ``λ`` |  |  |
+  | ``e`` | ``else`` | ``forall`` | ``i``
+  | ``if`` | ``in`` | ``let`` | ``pi``
+  | ``qubit`` | ``then`` | ``λ`` | ``π``
 
 The symbols used in Signe are the following:
   | ; | := | : | ~1
@@ -36,8 +36,8 @@ The symbols used in Signe are the following:
   | ~j | ( | ) | *
   | + | - | if° | if*
   | { | } | . | \
-  | , | = | -j | ->
-  | ∀ |  |  |
+  | , | = | -i | ^
+  | / | -> | ∀ |
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -83,11 +83,21 @@ All other symbols are terminals.
   | //Let// | -> | //Pattern// ``=`` //Expr//
   | //[Let]// | -> | //Let//
   |  |  **|**  | //Let// ``;`` //[Let]//
-  | //Complex// | -> | //Scalar// ``+`` //Scalar// ``j``
+  | //Complex2// | -> | //Scalar// ``+`` //Scalar// ``i``
+  |  |  **|**  | //Scalar// ``-`` //Scalar// ``i``
   |  |  **|**  | //Scalar//
-  |  |  **|**  | //Scalar// ``j``
-  |  |  **|**  | ``-j``
-  |  |  **|**  | ``j``
+  |  |  **|**  | //Scalar// ``i``
+  |  |  **|**  | ``-i``
+  |  |  **|**  | ``i``
+  |  |  **|**  | ``π``
+  |  |  **|**  | ``pi``
+  |  |  **|**  | ``e``
+  |  |  **|**  | ``(`` //Complex// ``)``
+  | //Complex1// | -> | //Complex2// ``^`` //Complex1//
+  |  |  **|**  | //Complex2// ``/`` //Complex1//
+  |  |  **|**  | //Complex2// //Complex1//
+  |  |  **|**  | //Complex2//
+  | //Complex// | -> | //Complex1//
   | //Pattern// | -> | //Id//
   |  |  **|**  | ``(`` //Id// ``,`` //Id// ``)``
   | //Mono2// | -> | //Id//

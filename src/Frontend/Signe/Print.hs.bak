@@ -99,16 +99,11 @@ instance Print Double where
 
 instance Print Frontend.Signe.Abs.Id where
   prt _ (Frontend.Signe.Abs.Id (_,i)) = doc $ showString $ i
-  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, prt 0 xs]
 
 instance Print Frontend.Signe.Abs.Scalar where
   prt _ (Frontend.Signe.Abs.Scalar i) = doc $ showString $ i
-
-instance Print Frontend.Signe.Abs.TId where
-  prt _ (Frontend.Signe.Abs.TId (_,i)) = doc $ showString $ i
-  prtList _ [x] = concatD [prt 0 x]
-  prtList _ (x:xs) = concatD [prt 0 x, prt 0 xs]
 
 instance Print Frontend.Signe.Abs.Program where
   prt i e = case e of
@@ -136,6 +131,7 @@ instance Print Frontend.Signe.Abs.Expr where
     Frontend.Signe.Abs.EMul complex expr -> prPrec i 3 (concatD [prt 0 complex, doc (showString "*"), prt 3 expr])
     Frontend.Signe.Abs.EApp expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, prt 3 expr2])
     Frontend.Signe.Abs.EPlus expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "+"), prt 1 expr2])
+    Frontend.Signe.Abs.EComp expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "\8728"), prt 1 expr2])
     Frontend.Signe.Abs.EIfq expr1 expr2 expr3 -> prPrec i 1 (concatD [doc (showString "if\176"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     Frontend.Signe.Abs.EIf expr1 expr2 expr3 -> prPrec i 1 (concatD [doc (showString "if"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     Frontend.Signe.Abs.ELet lets expr -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "{"), prt 0 lets, doc (showString "}"), doc (showString "in"), prt 0 expr])
@@ -145,9 +141,6 @@ instance Print Frontend.Signe.Abs.Expr where
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
 instance Print [Frontend.Signe.Abs.Expr] where
-  prt = prtList
-
-instance Print [Frontend.Signe.Abs.Id] where
   prt = prtList
 
 instance Print Frontend.Signe.Abs.Let where
@@ -161,7 +154,13 @@ instance Print [Frontend.Signe.Abs.Let] where
 
 instance Print Frontend.Signe.Abs.Complex where
   prt i e = case e of
-    Frontend.Signe.Abs.CComp scalar1 scalar2 -> prPrec i 0 (concatD [prt 0 scalar1, doc (showString "+"), prt 0 scalar2, doc (showString "j")])
+    Frontend.Signe.Abs.CComp scalar1 scalar2 -> prPrec i 2 (concatD [prt 0 scalar1, doc (showString "+"), prt 0 scalar2, doc (showString "i")])
+    Frontend.Signe.Abs.CComn scalar1 scalar2 -> prPrec i 2 (concatD [prt 0 scalar1, doc (showString "-"), prt 0 scalar2, doc (showString "i")])
+    Frontend.Signe.Abs.CPi -> prPrec i 2 (concatD [doc (showString "\960")])
+    Frontend.Signe.Abs.CE -> prPrec i 2 (concatD [doc (showString "e")])
+    Frontend.Signe.Abs.CExp complex1 complex2 -> prPrec i 1 (concatD [prt 2 complex1, doc (showString "^"), prt 1 complex2])
+    Frontend.Signe.Abs.CDiv complex1 complex2 -> prPrec i 1 (concatD [prt 2 complex1, doc (showString "/"), prt 1 complex2])
+    Frontend.Signe.Abs.CMul complex1 complex2 -> prPrec i 1 (concatD [prt 2 complex1, prt 1 complex2])
 
 instance Print Frontend.Signe.Abs.Pattern where
   prt i e = case e of
@@ -172,7 +171,7 @@ instance Print Frontend.Signe.Abs.Pattern where
 
 instance Print Frontend.Signe.Abs.Mono where
   prt i e = case e of
-    Frontend.Signe.Abs.MVar tid -> prPrec i 2 (concatD [prt 0 tid])
+    Frontend.Signe.Abs.MVar id -> prPrec i 2 (concatD [prt 0 id])
     Frontend.Signe.Abs.MQubit -> prPrec i 2 (concatD [doc (showString "qubit")])
     Frontend.Signe.Abs.MTens mono1 mono2 -> prPrec i 1 (concatD [prt 2 mono1, doc (showString "*"), prt 1 mono2])
     Frontend.Signe.Abs.MArrow mono1 mono2 -> prPrec i 1 (concatD [prt 2 mono1, doc (showString "->"), prt 1 mono2])
@@ -180,8 +179,8 @@ instance Print Frontend.Signe.Abs.Mono where
 instance Print Frontend.Signe.Abs.Type where
   prt i e = case e of
     Frontend.Signe.Abs.TMono mono -> prPrec i 0 (concatD [prt 0 mono])
-    Frontend.Signe.Abs.TPoly tids mono -> prPrec i 0 (concatD [doc (showString "\8704"), prt 0 tids, doc (showString "."), prt 0 mono])
+    Frontend.Signe.Abs.TPoly ids mono -> prPrec i 0 (concatD [doc (showString "\8704"), prt 0 ids, doc (showString "."), prt 0 mono])
 
-instance Print [Frontend.Signe.Abs.TId] where
+instance Print [Frontend.Signe.Abs.Id] where
   prt = prtList
 

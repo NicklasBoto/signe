@@ -39,7 +39,14 @@ data Expr
 data Let = LLet Pattern Expr
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data Complex = CComp Scalar Scalar
+data Complex
+    = CComp Scalar Scalar
+    | CComn Scalar Scalar
+    | CPi
+    | CE
+    | CExp Complex Complex
+    | CDiv Complex Complex
+    | CMul Complex Complex
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Pattern = PVar Id | PTup Id Id
@@ -83,6 +90,9 @@ cnmag = CComp (Scalar "0") (Scalar "-1")
 
 cjmag :: Complex
 cjmag = CComp (Scalar "0") (Scalar "1")
+
+cpis :: Complex
+cpis = CPi
 
 tpolys :: [Id] -> Mono -> Type
 tpolys c t = TPoly c t

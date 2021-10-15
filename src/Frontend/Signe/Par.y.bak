@@ -13,16 +13,17 @@ module Frontend.Signe.Par
   , pExpr1
   , pExpr
   , pListExpr
-  , pListId
   , pLet
   , pListLet
+  , pComplex2
+  , pComplex1
   , pComplex
   , pPattern
   , pMono2
   , pMono1
   , pMono
   , pType
-  , pListTId
+  , pListId
   ) where
 import qualified Frontend.Signe.Abs
 import Frontend.Signe.Lex
@@ -37,57 +38,65 @@ import Frontend.Signe.Lex
 %name pExpr1 Expr1
 %name pExpr Expr
 %name pListExpr ListExpr
-%name pListId ListId
 %name pLet Let
 %name pListLet ListLet
+%name pComplex2 Complex2
+%name pComplex1 Complex1
 %name pComplex Complex
 %name pPattern Pattern
 %name pMono2 Mono2
 %name pMono1 Mono1
 %name pMono Mono
 %name pType Type
-%name pListTId ListTId
+%name pListId ListId
 -- no lexer declaration
 %monad { Either String } { (>>=) } { return }
 %tokentype {Token}
 %token
-  '(' { PT _ (TS _ 1) }
-  ')' { PT _ (TS _ 2) }
-  '*' { PT _ (TS _ 3) }
-  '+' { PT _ (TS _ 4) }
-  ',' { PT _ (TS _ 5) }
-  '-' { PT _ (TS _ 6) }
-  '->' { PT _ (TS _ 7) }
-  '-j' { PT _ (TS _ 8) }
-  '.' { PT _ (TS _ 9) }
-  ':' { PT _ (TS _ 10) }
-  ':=' { PT _ (TS _ 11) }
-  ';' { PT _ (TS _ 12) }
-  '=' { PT _ (TS _ 13) }
-  '\\' { PT _ (TS _ 14) }
-  'else' { PT _ (TS _ 15) }
-  'forall' { PT _ (TS _ 16) }
-  'if' { PT _ (TS _ 17) }
-  'if*' { PT _ (TS _ 18) }
-  'if°' { PT _ (TS _ 19) }
-  'in' { PT _ (TS _ 20) }
-  'j' { PT _ (TS _ 21) }
-  'let' { PT _ (TS _ 22) }
-  'qubit' { PT _ (TS _ 23) }
-  'then' { PT _ (TS _ 24) }
-  '{' { PT _ (TS _ 25) }
-  '}' { PT _ (TS _ 26) }
-  '~+' { PT _ (TS _ 27) }
-  '~-' { PT _ (TS _ 28) }
-  '~0' { PT _ (TS _ 29) }
-  '~1' { PT _ (TS _ 30) }
-  '~i' { PT _ (TS _ 31) }
-  '~j' { PT _ (TS _ 32) }
-  'λ' { PT _ (TS _ 33) }
-  '∀' { PT _ (TS _ 34) }
+  '$' { PT _ (TS _ 1) }
+  '(' { PT _ (TS _ 2) }
+  ')' { PT _ (TS _ 3) }
+  '*' { PT _ (TS _ 4) }
+  '+' { PT _ (TS _ 5) }
+  ',' { PT _ (TS _ 6) }
+  '-' { PT _ (TS _ 7) }
+  '->' { PT _ (TS _ 8) }
+  '-i' { PT _ (TS _ 9) }
+  '.' { PT _ (TS _ 10) }
+  '/' { PT _ (TS _ 11) }
+  ':' { PT _ (TS _ 12) }
+  ':=' { PT _ (TS _ 13) }
+  ';' { PT _ (TS _ 14) }
+  '=' { PT _ (TS _ 15) }
+  '@' { PT _ (TS _ 16) }
+  '\\' { PT _ (TS _ 17) }
+  '^' { PT _ (TS _ 18) }
+  'e' { PT _ (TS _ 19) }
+  'else' { PT _ (TS _ 20) }
+  'forall' { PT _ (TS _ 21) }
+  'i' { PT _ (TS _ 22) }
+  'if' { PT _ (TS _ 23) }
+  'if*' { PT _ (TS _ 24) }
+  'if°' { PT _ (TS _ 25) }
+  'in' { PT _ (TS _ 26) }
+  'let' { PT _ (TS _ 27) }
+  'pi' { PT _ (TS _ 28) }
+  'qubit' { PT _ (TS _ 29) }
+  'then' { PT _ (TS _ 30) }
+  '{' { PT _ (TS _ 31) }
+  '}' { PT _ (TS _ 32) }
+  '~+' { PT _ (TS _ 33) }
+  '~-' { PT _ (TS _ 34) }
+  '~0' { PT _ (TS _ 35) }
+  '~1' { PT _ (TS _ 36) }
+  '~i' { PT _ (TS _ 37) }
+  '~j' { PT _ (TS _ 38) }
+  'λ' { PT _ (TS _ 39) }
+  'π' { PT _ (TS _ 40) }
+  '∀' { PT _ (TS _ 41) }
+  '∘' { PT _ (TS _ 42) }
   L_Id { PT _ (T_Id _) }
   L_Scalar { PT _ (T_Scalar $$) }
-  L_TId { PT _ (T_TId _) }
 
 %%
 
@@ -96,9 +105,6 @@ Id  : L_Id { Frontend.Signe.Abs.Id (mkPosToken $1) }
 
 Scalar :: { Frontend.Signe.Abs.Scalar}
 Scalar  : L_Scalar { Frontend.Signe.Abs.Scalar $1 }
-
-TId :: { Frontend.Signe.Abs.TId}
-TId  : L_TId { Frontend.Signe.Abs.TId (mkPosToken $1) }
 
 Program :: { Frontend.Signe.Abs.Program }
 Program : ListToplevel { Frontend.Signe.Abs.Progr $1 }
@@ -134,6 +140,9 @@ Expr2 : Expr2 Expr3 { Frontend.Signe.Abs.EApp $1 $2 }
 Expr1 :: { Frontend.Signe.Abs.Expr }
 Expr1 : Expr2 '+' Expr1 { Frontend.Signe.Abs.EPlus $1 $3 }
       | Expr2 '-' Expr1 { Frontend.Signe.Abs.emin $1 $3 }
+      | Expr2 '$' Expr1 { Frontend.Signe.Abs.edlr $1 $3 }
+      | Expr2 '∘' Expr1 { Frontend.Signe.Abs.EComp $1 $3 }
+      | Expr2 '@' Expr1 { Frontend.Signe.Abs.ecomps $1 $3 }
       | 'if°' Expr 'then' Expr 'else' Expr { Frontend.Signe.Abs.EIfq $2 $4 $6 }
       | 'if*' Expr 'then' Expr 'else' Expr { Frontend.Signe.Abs.eifqs $2 $4 $6 }
       | 'if' Expr 'then' Expr 'else' Expr { Frontend.Signe.Abs.EIf $2 $4 $6 }
@@ -150,28 +159,39 @@ ListExpr : {- empty -} { [] }
          | Expr { (:[]) $1 }
          | Expr ',' ListExpr { (:) $1 $3 }
 
-ListId :: { [Frontend.Signe.Abs.Id] }
-ListId : {- empty -} { [] } | Id ListId { (:) $1 $2 }
-
 Let :: { Frontend.Signe.Abs.Let }
 Let : Pattern '=' Expr { Frontend.Signe.Abs.LLet $1 $3 }
 
 ListLet :: { [Frontend.Signe.Abs.Let] }
 ListLet : Let { (:[]) $1 } | Let ';' ListLet { (:) $1 $3 }
 
+Complex2 :: { Frontend.Signe.Abs.Complex }
+Complex2 : Scalar '+' Scalar 'i' { Frontend.Signe.Abs.CComp $1 $3 }
+         | Scalar '-' Scalar 'i' { Frontend.Signe.Abs.CComn $1 $3 }
+         | Scalar { Frontend.Signe.Abs.creal $1 }
+         | Scalar 'i' { Frontend.Signe.Abs.cimag $1 }
+         | '-i' { Frontend.Signe.Abs.cnmag }
+         | 'i' { Frontend.Signe.Abs.cjmag }
+         | 'π' { Frontend.Signe.Abs.CPi }
+         | 'pi' { Frontend.Signe.Abs.cpis }
+         | 'e' { Frontend.Signe.Abs.CE }
+         | '(' Complex ')' { $2 }
+
+Complex1 :: { Frontend.Signe.Abs.Complex }
+Complex1 : Complex2 '^' Complex1 { Frontend.Signe.Abs.CExp $1 $3 }
+         | Complex2 '/' Complex1 { Frontend.Signe.Abs.CDiv $1 $3 }
+         | Complex2 Complex1 { Frontend.Signe.Abs.CMul $1 $2 }
+         | Complex2 { $1 }
+
 Complex :: { Frontend.Signe.Abs.Complex }
-Complex : Scalar '+' Scalar 'j' { Frontend.Signe.Abs.CComp $1 $3 }
-        | Scalar { Frontend.Signe.Abs.creal $1 }
-        | Scalar 'j' { Frontend.Signe.Abs.cimag $1 }
-        | '-j' { Frontend.Signe.Abs.cnmag }
-        | 'j' { Frontend.Signe.Abs.cjmag }
+Complex : Complex1 { $1 }
 
 Pattern :: { Frontend.Signe.Abs.Pattern }
 Pattern : Id { Frontend.Signe.Abs.PVar $1 }
         | '(' Id ',' Id ')' { Frontend.Signe.Abs.PTup $2 $4 }
 
 Mono2 :: { Frontend.Signe.Abs.Mono }
-Mono2 : TId { Frontend.Signe.Abs.MVar $1 }
+Mono2 : Id { Frontend.Signe.Abs.MVar $1 }
       | 'qubit' { Frontend.Signe.Abs.MQubit }
       | '(' Mono ')' { $2 }
 
@@ -185,11 +205,11 @@ Mono : Mono1 { $1 }
 
 Type :: { Frontend.Signe.Abs.Type }
 Type : Mono { Frontend.Signe.Abs.TMono $1 }
-     | '∀' ListTId '.' Mono { Frontend.Signe.Abs.TPoly $2 $4 }
-     | 'forall' ListTId '.' Mono { Frontend.Signe.Abs.tpolys $2 $4 }
+     | '∀' ListId '.' Mono { Frontend.Signe.Abs.TPoly $2 $4 }
+     | 'forall' ListId '.' Mono { Frontend.Signe.Abs.tpolys $2 $4 }
 
-ListTId :: { [Frontend.Signe.Abs.TId] }
-ListTId : TId { (:[]) $1 } | TId ListTId { (:) $1 $2 }
+ListId :: { [Frontend.Signe.Abs.Id] }
+ListId : Id { (:[]) $1 } | Id ListId { (:) $1 $2 }
 {
 
 happyError :: [Token] -> Either String a

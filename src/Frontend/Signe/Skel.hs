@@ -42,6 +42,12 @@ transLet x = case x of
 transComplex :: Frontend.Signe.Abs.Complex -> Result
 transComplex x = case x of
   Frontend.Signe.Abs.CComp scalar1 scalar2 -> failure x
+  Frontend.Signe.Abs.CComn scalar1 scalar2 -> failure x
+  Frontend.Signe.Abs.CPi -> failure x
+  Frontend.Signe.Abs.CE -> failure x
+  Frontend.Signe.Abs.CExp complex1 complex2 -> failure x
+  Frontend.Signe.Abs.CDiv complex1 complex2 -> failure x
+  Frontend.Signe.Abs.CMul complex1 complex2 -> failure x
 transPattern :: Frontend.Signe.Abs.Pattern -> Result
 transPattern x = case x of
   Frontend.Signe.Abs.PVar id -> failure x

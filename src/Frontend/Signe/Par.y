@@ -15,6 +15,8 @@ module Frontend.Signe.Par
   , pListExpr
   , pLet
   , pListLet
+  , pComplex2
+  , pComplex1
   , pComplex
   , pPattern
   , pMono2
@@ -38,6 +40,8 @@ import Frontend.Signe.Lex
 %name pListExpr ListExpr
 %name pLet Let
 %name pListLet ListLet
+%name pComplex2 Complex2
+%name pComplex1 Complex1
 %name pComplex Complex
 %name pPattern Pattern
 %name pMono2 Mono2
@@ -56,33 +60,38 @@ import Frontend.Signe.Lex
   ',' { PT _ (TS _ 5) }
   '-' { PT _ (TS _ 6) }
   '->' { PT _ (TS _ 7) }
-  '-j' { PT _ (TS _ 8) }
+  '-i' { PT _ (TS _ 8) }
   '.' { PT _ (TS _ 9) }
-  ':' { PT _ (TS _ 10) }
-  ':=' { PT _ (TS _ 11) }
-  ';' { PT _ (TS _ 12) }
-  '=' { PT _ (TS _ 13) }
-  '\\' { PT _ (TS _ 14) }
-  'else' { PT _ (TS _ 15) }
-  'forall' { PT _ (TS _ 16) }
-  'if' { PT _ (TS _ 17) }
-  'if*' { PT _ (TS _ 18) }
-  'if°' { PT _ (TS _ 19) }
-  'in' { PT _ (TS _ 20) }
-  'j' { PT _ (TS _ 21) }
-  'let' { PT _ (TS _ 22) }
-  'qubit' { PT _ (TS _ 23) }
-  'then' { PT _ (TS _ 24) }
-  '{' { PT _ (TS _ 25) }
-  '}' { PT _ (TS _ 26) }
-  '~+' { PT _ (TS _ 27) }
-  '~-' { PT _ (TS _ 28) }
-  '~0' { PT _ (TS _ 29) }
-  '~1' { PT _ (TS _ 30) }
-  '~i' { PT _ (TS _ 31) }
-  '~j' { PT _ (TS _ 32) }
-  'λ' { PT _ (TS _ 33) }
-  '∀' { PT _ (TS _ 34) }
+  '/' { PT _ (TS _ 10) }
+  ':' { PT _ (TS _ 11) }
+  ':=' { PT _ (TS _ 12) }
+  ';' { PT _ (TS _ 13) }
+  '=' { PT _ (TS _ 14) }
+  '\\' { PT _ (TS _ 15) }
+  '^' { PT _ (TS _ 16) }
+  'e' { PT _ (TS _ 17) }
+  'else' { PT _ (TS _ 18) }
+  'forall' { PT _ (TS _ 19) }
+  'i' { PT _ (TS _ 20) }
+  'if' { PT _ (TS _ 21) }
+  'if*' { PT _ (TS _ 22) }
+  'if°' { PT _ (TS _ 23) }
+  'in' { PT _ (TS _ 24) }
+  'let' { PT _ (TS _ 25) }
+  'pi' { PT _ (TS _ 26) }
+  'qubit' { PT _ (TS _ 27) }
+  'then' { PT _ (TS _ 28) }
+  '{' { PT _ (TS _ 29) }
+  '}' { PT _ (TS _ 30) }
+  '~+' { PT _ (TS _ 31) }
+  '~-' { PT _ (TS _ 32) }
+  '~0' { PT _ (TS _ 33) }
+  '~1' { PT _ (TS _ 34) }
+  '~i' { PT _ (TS _ 35) }
+  '~j' { PT _ (TS _ 36) }
+  'λ' { PT _ (TS _ 37) }
+  'π' { PT _ (TS _ 38) }
+  '∀' { PT _ (TS _ 39) }
   L_Id { PT _ (T_Id _) }
   L_Scalar { PT _ (T_Scalar $$) }
 
@@ -150,12 +159,26 @@ Let : Pattern '=' Expr { Frontend.Signe.Abs.LLet $1 $3 }
 ListLet :: { [Frontend.Signe.Abs.Let] }
 ListLet : Let { (:[]) $1 } | Let ';' ListLet { (:) $1 $3 }
 
+Complex2 :: { Frontend.Signe.Abs.Complex }
+Complex2 : Scalar '+' Scalar 'i' { Frontend.Signe.Abs.CComp $1 $3 }
+         | Scalar '-' Scalar 'i' { Frontend.Signe.Abs.CComn $1 $3 }
+         | Scalar { Frontend.Signe.Abs.creal $1 }
+         | Scalar 'i' { Frontend.Signe.Abs.cimag $1 }
+         | '-i' { Frontend.Signe.Abs.cnmag }
+         | 'i' { Frontend.Signe.Abs.cjmag }
+         | 'π' { Frontend.Signe.Abs.CPi }
+         | 'pi' { Frontend.Signe.Abs.cpis }
+         | 'e' { Frontend.Signe.Abs.CE }
+         | '(' Complex ')' { $2 }
+
+Complex1 :: { Frontend.Signe.Abs.Complex }
+Complex1 : Complex2 '^' Complex1 { Frontend.Signe.Abs.CExp $1 $3 }
+         | Complex2 '/' Complex1 { Frontend.Signe.Abs.CDiv $1 $3 }
+         | Complex2 Complex1 { Frontend.Signe.Abs.CMul $1 $2 }
+         | Complex2 { $1 }
+
 Complex :: { Frontend.Signe.Abs.Complex }
-Complex : Scalar '+' Scalar 'j' { Frontend.Signe.Abs.CComp $1 $3 }
-        | Scalar { Frontend.Signe.Abs.creal $1 }
-        | Scalar 'j' { Frontend.Signe.Abs.cimag $1 }
-        | '-j' { Frontend.Signe.Abs.cnmag }
-        | 'j' { Frontend.Signe.Abs.cjmag }
+Complex : Complex1 { $1 }
 
 Pattern :: { Frontend.Signe.Abs.Pattern }
 Pattern : Id { Frontend.Signe.Abs.PVar $1 }

@@ -44,16 +44,25 @@ layout stop "in" ;
 LLet . Let ::= Pattern "=" Expr ;
 separator nonempty Let ";" ;
 
-CComp . Complex ::= Scalar "+" Scalar "j" ;
-creal . Complex ::= Scalar ;
-cimag . Complex ::= Scalar "j" ;
-cnmag . Complex ::= "-j" ;
-cjmag . Complex ::= "j" ;
+CComp . Complex2 ::= Scalar "+" Scalar "i" ;
+CComn . Complex2 ::= Scalar "-" Scalar "i" ;
+creal . Complex2 ::= Scalar ;
+cimag . Complex2 ::= Scalar "i" ;
+cnmag . Complex2 ::= "-i" ;
+cjmag . Complex2 ::= "i" ;
+CPi   . Complex2 ::= "π" ;
+cpis  . Complex2 ::= "pi" ;
+CE    . Complex2 ::= "e" ;
+CExp  . Complex1 ::= Complex2 "^" Complex1 ;
+CDiv  . Complex1 ::= Complex2 "/" Complex1 ;
+CMul  . Complex1 ::= Complex2 Complex1 ;
+coercions Complex 2 ;
 
 define creal r = CComp r (Scalar "0") ;
 define cimag i = CComp (Scalar "0") i ;
 define cnmag   = CComp (Scalar "0") (Scalar "-1") ;
 define cjmag   = CComp (Scalar "0") (Scalar "1") ;
+define cpis    = CPi ;
 
 token Scalar '-'? digit+ ('.' digit+ ('E' '-'? digit+)?)? ;
 

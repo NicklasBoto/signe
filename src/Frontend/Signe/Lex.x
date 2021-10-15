@@ -19,7 +19,7 @@ $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \λ | \; | \: \= | \: | \~ "1" | \~ "0" | \~ \+ | \~ \- | \~ "i" | \~ "j" | \( | \) | \* | \+ | \- | "if" \° | "if" \* | \{ | \} | \. | \\ | \, | \= | \- "j" | \- \> | \∀
+   \λ | \π | \; | \: \= | \: | \~ "1" | \~ "0" | \~ \+ | \~ \- | \~ "i" | \~ "j" | \( | \) | \* | \+ | \- | "if" \° | "if" \* | \{ | \} | \. | \\ | \, | \= | \- "i" | \^ | \/ | \- \> | \∀
 
 :-
 
@@ -112,7 +112,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "if*" 18 (b "." 9 (b "," 5 (b "*" 3 (b ")" 2 (b "(" 1 N N) N) (b "+" 4 N N)) (b "->" 7 (b "-" 6 N N) (b "-j" 8 N N))) (b "\\" 14 (b ";" 12 (b ":=" 11 (b ":" 10 N N) N) (b "=" 13 N N)) (b "forall" 16 (b "else" 15 N N) (b "if" 17 N N)))) (b "~+" 27 (b "qubit" 23 (b "j" 21 (b "in" 20 (b "if\176" 19 N N) N) (b "let" 22 N N)) (b "{" 25 (b "then" 24 N N) (b "}" 26 N N))) (b "~i" 31 (b "~0" 29 (b "~-" 28 N N) (b "~1" 30 N N)) (b "\955" 33 (b "~j" 32 N N) (b "\8704" 34 N N))))
+resWords = b "i" 20 (b "/" 10 (b "," 5 (b "*" 3 (b ")" 2 (b "(" 1 N N) N) (b "+" 4 N N)) (b "-i" 8 (b "->" 7 (b "-" 6 N N) N) (b "." 9 N N))) (b "\\" 15 (b ";" 13 (b ":=" 12 (b ":" 11 N N) N) (b "=" 14 N N)) (b "else" 18 (b "e" 17 (b "^" 16 N N) N) (b "forall" 19 N N)))) (b "}" 30 (b "let" 25 (b "if\176" 23 (b "if*" 22 (b "if" 21 N N) N) (b "in" 24 N N)) (b "then" 28 (b "qubit" 27 (b "pi" 26 N N) N) (b "{" 29 N N))) (b "~i" 35 (b "~0" 33 (b "~-" 32 (b "~+" 31 N N) N) (b "~1" 34 N N)) (b "\960" 38 (b "\955" 37 (b "~j" 36 N N) N) (b "\8704" 39 N N))))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Frontend.SAST.Abs
       Frontend.Signe.Abs
       Frontend.Signe.ErrM
       Frontend.Signe.Layout

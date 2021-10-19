@@ -9,16 +9,31 @@ module Type.Check where
 
 #define DEBUG
 
-import Frontend.SAST.Abs
-import Type.Error
+import Frontend.SAST.Abs ( Type(..), Expr(..), Scheme(..), Id(Id) )
+import Type.Error ( TypeError(..), urk )
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import Data.Functor
-import Data.Bifunctor
-import Data.Complex
-import Data.List
+import Data.Functor ( (<&>) )
+import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Complex ( magnitude )
+import Data.List ( nub )
 import Control.Monad.Except
+    ( foldM,
+      replicateM,
+      unless,
+      runExceptT,
+      MonadError(throwError),
+      ExceptT(..) )
 import Control.Monad.State
+    ( foldM,
+      replicateM,
+      unless,
+      gets,
+      modify,
+      evalState,
+      MonadState,
+      State,
+      StateT(StateT) )
 
 #ifdef DEBUG
 
@@ -173,7 +188,7 @@ infer c = \case
     Tup [] -> return (nullSubst, TypeUnit)
 
     Tup xs -> foldM
-        (\(s,t) e -> infer c e <&> bimap (s∘) (t:*))
+        (\(s,t) e -> infer c e <&> bimap (s∘) (t<>))
         (nullSubst, TypeUnit)
         xs
 
@@ -208,6 +223,7 @@ infer c = \case
 
         return (szz ∘ sz ∘ sg ∘ sf, apply szz (tf :-> tg))
 
+    -- FIXME: impose orthogonality constraints when possible
     Ifq b t f -> do
         (s1,t1) <- infer c b
         (s2,t2) <- infer c t
@@ -224,6 +240,7 @@ infer c = \case
         s5 <- unify t2 t3
         return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 
+    -- FIXME: Handle not factorizable types better
     Let ps e -> do
         is <- mapM (infer c) ps
         let (ss, ts) = unzip $ Map.elems is
@@ -235,12 +252,6 @@ infer c = \case
         (se, te) <- infer c'' e
 
         return (foldl (∘) se ss, te)
-
-    Abs [x] e -> do
-        tv <- fresh
-        let env' = c `extend` ([x], Forall [] tv)
-        (s1, t1) <- infer env' e
-        return (s1, apply s1 tv :-> t1)
 
     Abs x e -> do
         tv <- fresh

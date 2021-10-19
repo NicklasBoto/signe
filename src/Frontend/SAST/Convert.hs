@@ -86,7 +86,7 @@ convertPattern (Signe.PTup a b) = [convertId a, convertId b]
 revertPattern :: [SAST.Id] -> Signe.Pattern
 revertPattern [x]   = Signe.PVar $ revertId x
 revertPattern [x,y] = Signe.PTup (revertId x) (revertId y)
-revertPattern _ = error "You forgot to implement this is the parser. Akward..."
+revertPattern _ = error "You forgot to implement this in the parser. Akward..."
 
 convertType :: Signe.Type -> SAST.Scheme
 convertType (Signe.TMono t)    = SAST.Forall [] $ convertMono t

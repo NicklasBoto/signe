@@ -42,3 +42,8 @@ data Scheme = Forall [Id] Type
 
 data Type = TypeVar Id | TypeQubit | TypeUnit | Type :* Type | Type :-> Type
   deriving (Eq, Read)
+
+instance Semigroup Type where
+  TypeUnit <> t = t
+  t <> TypeUnit = t
+  t <> s        = t :* s

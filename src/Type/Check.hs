@@ -7,8 +7,6 @@
 
 module Type.Check where
 
-#define DEBUG
-
 import Frontend.SAST.Abs ( Type(..), Expr(..), Scheme(..), Id(Id) )
 import Type.Error ( TypeError(..), urk )
 import qualified Data.Map as Map

@@ -7,12 +7,18 @@ type Program = [Toplevel]
 
 data Id 
     = Id
-    { pos  :: (Int, Int)
+    { pos  :: Maybe (Int, Int)
     , name :: String
-    } deriving (Eq, Show, Read, Ord)
+    } deriving Read
 
-data Toplevel = Topl Id [[Id]] (Maybe Type) Expr
-  deriving (Eq, Show, Read)
+instance Eq Id where
+  Id _ a == Id _ b = a == b
+
+instance Ord Id where
+  compare (Id _ a) (Id _ b) = compare a b
+
+data Toplevel = Topl Id [[Id]] (Maybe Scheme) Expr
+  deriving (Eq, Read)
 
 type Let = Map.Map [Id] Expr
 
@@ -29,7 +35,10 @@ data Expr
     | If Expr Expr Expr
     | Let Let Expr
     | Abs [Id] Expr
-  deriving (Eq, Show, Read)
+  deriving (Eq, Read)
 
-data Type = Forall [Id] Type | TypeVar Id | TypeQubit | TypeUnit | Type :* Type | Type :-> Type
-  deriving (Eq, Ord, Show, Read)
+data Scheme = Forall [Id] Type
+  deriving (Eq, Read)
+
+data Type = TypeVar Id | TypeQubit | TypeUnit | Type :* Type | Type :-> Type
+  deriving (Eq, Read)

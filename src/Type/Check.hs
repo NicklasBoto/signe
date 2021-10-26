@@ -14,7 +14,7 @@ import qualified Data.Set as Set
 import Data.Functor ( (<&>) )
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Data.Complex ( magnitude )
-import Data.List ( nub )
+import Control.Monad ( foldM, forever, replicateM, unless )
 import Control.Monad.Except
     ( foldM,
       replicateM,
@@ -45,7 +45,7 @@ inferExpr :: String -> Scheme
 inferExpr = either (error . show) id . checkExpr . parseExpr
 
 debug :: Monad m => String -> m ()
-debug = flip trace (return ()) 
+debug = flip trace (return ())
 
 #endif
 
@@ -87,12 +87,7 @@ closeOver (sub, ty) = normalize sc
 normalize :: Scheme -> Scheme
 normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
   where
-    ord = zip (nub $ fv body) letters
-
-    fv (TypeVar a) = [a]
-    fv (n :-> p)   = fv n <> fv p
-    fv (a :* b)    = fv a <> fv b
-    fv _           = []
+    ord = zip (Set.toList $ ftv body) letters
 
     normtype (a :-> b)   = normtype a :-> normtype b
     normtype (a :* b)    = normtype a :* normtype b
@@ -251,8 +246,8 @@ infer c = \case
 
         return (foldl (∘) se ss, te)
 
-    Abs x e -> do
-        tv <- fresh
-        c' <- foldl extend c <$> mapM (\v -> ([v],) . Forall [] <$> fresh) x
+    Abs xs e -> do
+        tvs <- replicateM (length xs) fresh
+        let c' = foldl extend c (bimap pure (Forall []) <$> zip xs tvs)
         (s1, t1) <- infer c' e
-        return (s1, apply s1 tv :-> t1)
+        return (s1, apply s1 (foldr (:->) t1 tvs))

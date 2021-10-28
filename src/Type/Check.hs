@@ -7,14 +7,17 @@
 
 module Type.Check where
 
-import Frontend.SAST.Abs ( Type(..), Expr(..), Scheme(..), Id(Id) )
+#define DEBUG
+
+import Frontend.SAST.Abs
+    ( Expr(..), Id(Id), Program, Scheme(..), Toplevel(..), Type(..) ) 
 import Type.Error ( TypeError(..), urk )
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Functor ( (<&>) )
-import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Bifunctor ( Bifunctor(bimap), second )
 import Data.Complex ( magnitude )
-import Control.Monad ( foldM, forever, replicateM, unless )
+import Control.Monad ( foldM, replicateM, unless )
 import Control.Monad.Except
     ( foldM,
       replicateM,
@@ -23,10 +26,7 @@ import Control.Monad.Except
       MonadError(throwError),
       ExceptT(..) )
 import Control.Monad.State
-    ( foldM,
-      replicateM,
-      unless,
-      gets,
+    ( gets,
       modify,
       evalState,
       MonadState,
@@ -35,14 +35,20 @@ import Control.Monad.State
 
 #ifdef DEBUG
 
-import Frontend.SAST.Par ( parseExpr )
+import Frontend.SAST.Par ( parseExpr, parse)
 import Debug.Trace ( trace )
 
 checkExpr :: Expr -> Either TypeError Scheme
 checkExpr = runCheck . infer emptyContext
 
 inferExpr :: String -> Scheme
-inferExpr = either (error . show) id . checkExpr . parseExpr
+inferExpr = either (errorWithoutStackTrace . show) id . checkExpr . parseExpr
+
+inferProgram :: String -> [(Id, Scheme)]
+inferProgram = either (errorWithoutStackTrace . show) id . checkProgram . parse
+
+inferFile :: FilePath -> IO [(Id, Scheme)]
+inferFile path = inferProgram <$> readFile path
 
 debug :: Monad m => String -> m ()
 debug = flip trace (return ())
@@ -70,10 +76,35 @@ extend (Context c) = Context . go
               Map.insert x (Forall vs a) $ go (xs, Forall vs b)
           go _ = urk
 
-type Fresh = Int
+newtype Check a = Check (ExceptT TypeError (State Int) a)
+    deriving (Functor, Applicative, Monad, MonadState Int, MonadError TypeError)
 
-newtype Check a = Check (ExceptT TypeError (State Fresh) a)
-    deriving (Functor, Applicative, Monad, MonadState Fresh, MonadError TypeError)
+checkProgram :: Program -> Either TypeError [(Id, Scheme)]
+checkProgram = mapM <$> checkToplevel . generateContext <*> id
+
+checkToplevel :: Context -> Toplevel -> Either TypeError (Id, Scheme)
+checkToplevel c (Topl n as Nothing e) = do
+    s <- runCheck $ addArguments as c >>= flip infer e
+    return (n,s)
+checkToplevel c (Topl n as (Just t) e) = do
+    let check = do
+        c' <- addArguments as c
+        (_,t') <- infer c' e
+        s <- unify t' =<< instantiate t
+        return (s, apply s t')
+
+    runCheck check
+    return (n, t)
+
+addArguments :: [[Id]] -> Context -> Check Context
+addArguments as c = do
+    tvs <- replicateM (length as) fresh
+    return $ foldl extend c (second (Forall []) <$> zip as tvs)
+
+generateContext :: Program -> Context
+generateContext = Context . Map.fromList . (>>= go)
+    where go (Topl n _ Nothing _)  = []
+          go (Topl n _ (Just t) _) = pure (n, t)
 
 runCheck :: Check (Subst, Type) -> Either TypeError Scheme
 runCheck (Check m) = case evalState (runExceptT m) 0 of
@@ -152,7 +183,7 @@ unify (TypeVar v) t = bind v t
 unify t (TypeVar v) = bind v t
 unify s t
     | s == t    = return nullSubst
-    | otherwise = throwError $ TypeMismatch s t
+    | otherwise = throwError $ TypeMismatch t s
 
 bind :: Id -> Type -> Check Subst
 bind v t
@@ -221,7 +252,7 @@ infer c = \case
         (s1,t1) <- infer c b
         (s2,t2) <- infer c t
         (s3,t3) <- infer c f
-        s4 <- unify TypeQubit t1
+        s4 <- unify t1 TypeQubit
         s5 <- unify t2 t3
         return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 
@@ -229,7 +260,7 @@ infer c = \case
         (s1,t1) <- infer c b
         (s2,t2) <- infer c t
         (s3,t3) <- infer c f
-        s4 <- unify TypeQubit t1
+        s4 <- unify t1 TypeQubit
         s5 <- unify t2 t3
         return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 

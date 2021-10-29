@@ -10,7 +10,7 @@ module Type.Check where
 #define DEBUG
 
 import Frontend.SAST.Abs
-    ( Expr(..), Id(Id), Program, Scheme(..), Toplevel(..), Type(..) ) 
+    ( Expr(..), Id(Id), Program, Scheme(..), Toplevel(..), Type(..) )
 import Type.Error ( TypeError(..), urk )
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -65,8 +65,7 @@ lookupContext :: Context -> Id -> Check (Subst, Type)
 lookupContext (Context c) x =
   case Map.lookup x c of
     Nothing -> throwError $ VariableNotInScope x
-    Just s  -> do t <- instantiate s
-                  return (nullSubst, t)
+    Just s  -> (nullSubst,) <$> instantiate s
 
 extend :: Context -> ([Id], Scheme) -> Context
 extend (Context c) = Context . go
@@ -83,23 +82,18 @@ checkProgram :: Program -> Either TypeError [(Id, Scheme)]
 checkProgram = mapM <$> checkToplevel . generateContext <*> id
 
 checkToplevel :: Context -> Toplevel -> Either TypeError (Id, Scheme)
-checkToplevel c (Topl n as Nothing e) = do
-    s <- runCheck $ addArguments as c >>= flip infer e
-    return (n,s)
+checkToplevel c (Topl n as Nothing  e) = (n,) <$> runCheck (addArguments as c >>= flip infer e)
 checkToplevel c (Topl n as (Just t) e) = do
     let check = do
         c' <- addArguments as c
         (_,t') <- infer c' e
         s <- unify t' =<< instantiate t
         return (s, apply s t')
-
     runCheck check
     return (n, t)
 
 addArguments :: [[Id]] -> Context -> Check Context
-addArguments as c = do
-    tvs <- replicateM (length as) fresh
-    return $ foldl extend c (second (Forall []) <$> zip as tvs)
+addArguments as c = foldl extend c . zip as . map (Forall []) <$> replicateM (length as) fresh
 
 generateContext :: Program -> Context
 generateContext = Context . Map.fromList . (>>= go)
@@ -244,7 +238,6 @@ infer c = \case
         (sg, tg) <- infer (apply sf c) g
         sz       <- unify (apply sg tf) (tf :-> tfg)
         szz      <- unify (apply sz tg) (tfg :-> tg)
-
         return (szz ∘ sz ∘ sg ∘ sf, apply szz (tf :-> tg))
 
     -- FIXME: impose orthogonality constraints when possible

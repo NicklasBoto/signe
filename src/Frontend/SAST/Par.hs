@@ -7,7 +7,7 @@ import Frontend.SAST.Abs
 import Frontend.SAST.Convert
 
 ofParser :: (t -> p) -> ([Token] -> Either String t) -> String -> p
-ofParser conv par s = case par (resolveLayout True (myLexer s)) of
+ofParser conv par s = case par (resolveLayout False (myLexer s)) of
     Right e -> conv e
     Left  s -> error s
 
@@ -21,4 +21,6 @@ parseToplevel :: String -> Toplevel
 parseToplevel = convertToplevel `ofParser` pToplevel
 
 parse :: String -> Program
-parse = convert `ofParser` pProgram
+parse s = case pProgram (resolveLayout True (myLexer s)) of
+    Right e -> convert e
+    Left  s -> error s

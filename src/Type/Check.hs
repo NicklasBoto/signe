@@ -2,12 +2,11 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE NamedFieldPuns             #-}
 {-# LANGUAGE CPP, MagicHash             #-}
+{-# LANGUAGE BlockArguments             #-}
 {-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE LambdaCase                 #-}
 
 module Type.Check where
-
-#define DEBUG
 
 import Frontend.SAST.Abs
     ( Expr(..), Id(Id), Program, Scheme(..), Toplevel(..), Type(..) )
@@ -15,6 +14,7 @@ import Type.Error ( TypeError(..), urk )
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Functor ( (<&>) )
+import Data.Function ( on )
 import Data.Bifunctor ( Bifunctor(bimap), second )
 import Data.Complex ( magnitude )
 import Control.Monad ( foldM, replicateM, unless )
@@ -35,7 +35,7 @@ import Control.Monad.State
 
 #ifdef DEBUG
 
-import Frontend.SAST.Par ( parseExpr, parse)
+import Frontend.SAST.Par ( parseExpr, parse, parseType )
 import Debug.Trace ( trace )
 
 checkExpr :: Expr -> Either TypeError Scheme
@@ -47,8 +47,9 @@ inferExpr = either (errorWithoutStackTrace . show) id . checkExpr . parseExpr
 inferProgram :: String -> [(Id, Scheme)]
 inferProgram = either (errorWithoutStackTrace . show) id . checkProgram . parse
 
-inferFile :: FilePath -> IO [(Id, Scheme)]
-inferFile path = inferProgram <$> readFile path
+inferFile :: FilePath -> IO ()
+inferFile path = putStrLn . concatMap put . inferProgram =<< readFile path
+    where put (i,s) = show i ++ " : " ++ show s ++ "\n"
 
 debug :: Monad m => String -> m ()
 debug = flip trace (return ())
@@ -82,18 +83,27 @@ checkProgram :: Program -> Either TypeError [(Id, Scheme)]
 checkProgram = mapM <$> checkToplevel . generateContext <*> id
 
 checkToplevel :: Context -> Toplevel -> Either TypeError (Id, Scheme)
-checkToplevel c (Topl n as Nothing  e) = (n,) <$> runCheck (addArguments as c >>= flip infer e)
-checkToplevel c (Topl n as (Just t) e) = do
-    let check = do
-        c' <- addArguments as c
-        (_,t') <- infer c' e
-        s <- unify t' =<< instantiate t
-        return (s, apply s t')
-    runCheck check
-    return (n, t)
+checkToplevel c (Topl n as Nothing e) = (n,) <$> runCheck do
+    tvs <- generateFreshArgumentTypes as
+    (s,t) <- infer (addArguments c as tvs) e
+    (s,) . foldr (:->) t . apply s <$> mapM instantiate tvs
+checkToplevel c (Topl n as (Just es) e) = (n,) <$> runCheck do
+    tvs <- generateFreshArgumentTypes as
+    (s,t) <- infer (addArguments c as tvs) e
+    at <- foldr (:->) t . apply s <$> mapM instantiate tvs
+    et <- instantiate es
+    let (~~) = (==) `on` closeOver . (s,)
+    us <- unify at et
+    if et ~~ apply us at
+        then return (s, et)
+        else throwError $ TypeMismatch et at
 
-addArguments :: [[Id]] -> Context -> Check Context
-addArguments as c = foldl extend c . zip as . map (Forall []) <$> replicateM (length as) fresh
+generateFreshArgumentTypes :: [[Id]] -> Check [Scheme]
+generateFreshArgumentTypes = mapM $ fmap (Forall []) . foldM (\b _ -> (b<>) <$> fresh) TypeUnit
+
+addArguments :: Context -> [[Id]] -> [Scheme] -> Context
+addArguments c = foldl extend c ... zip
+    where (...) = (.).(.)
 
 generateContext :: Program -> Context
 generateContext = Context . Map.fromList . (>>= go)
@@ -105,7 +115,7 @@ runCheck (Check m) = case evalState (runExceptT m) 0 of
     Left  e -> Left e
     Right s -> Right $ closeOver s
 
-closeOver :: (Map.Map Id Type, Type) -> Scheme
+closeOver :: (Subst, Type) -> Scheme
 closeOver (sub, ty) = normalize sc
   where sc = generalize emptyContext (apply sub ty)
 
@@ -231,14 +241,9 @@ infer c = \case
         return (sb' ∘ sa' ∘ sb ∘ sa, apply sb' tb)
 
     Comp f g -> do
-        tf       <- fresh
-        tfg      <- fresh
-        tg       <- fresh
-        (sf, tf) <- infer c f
-        (sg, tg) <- infer (apply sf c) g
-        sz       <- unify (apply sg tf) (tf :-> tfg)
-        szz      <- unify (apply sz tg) (tfg :-> tg)
-        return (szz ∘ sz ∘ sg ∘ sf, apply szz (tf :-> tg))
+        let v = Id Nothing "I am too lazy at the moment"
+            e = Abs [v] (App f (App g (Var v)))
+        infer c e
 
     -- FIXME: impose orthogonality constraints when possible
     Ifq b t f -> do
@@ -267,7 +272,6 @@ infer c = \case
             c''      = foldl extend c' $ zip vs ts'
 
         (se, te) <- infer c'' e
-
         return (foldl (∘) se ss, te)
 
     Abs xs e -> do

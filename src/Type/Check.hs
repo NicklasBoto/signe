@@ -8,6 +8,8 @@
 
 module Type.Check where
 
+#define DEBUG
+
 import Frontend.SAST.Abs
     ( Expr(..), Id(Id), Program, Scheme(..), Toplevel(..), Type(..) )
 import Type.Error ( TypeError(..), urk )
@@ -82,12 +84,14 @@ newtype Check a = Check (ExceptT TypeError (State Int) a)
 checkProgram :: Program -> Either TypeError [(Id, Scheme)]
 checkProgram = mapM <$> checkToplevel . generateContext <*> id
 
-checkToplevel :: Context -> Toplevel -> Either TypeError (Id, Scheme)
-checkToplevel c (Topl n as Nothing e) = (n,) <$> runCheck do
+checkToplevel :: Check Context -> Toplevel -> Either TypeError (Id, Scheme)
+checkToplevel cc (Topl n as Nothing e) = (n,) <$> runCheck do
+    c <- cc
     tvs <- generateFreshArgumentTypes as
     (s,t) <- infer (addArguments c as tvs) e
     (s,) . foldr (:->) t . apply s <$> mapM instantiate tvs
-checkToplevel c (Topl n as (Just es) e) = (n,) <$> runCheck do
+checkToplevel cc (Topl n as (Just es) e) = (n,) <$> runCheck do
+    c <- cc
     tvs <- generateFreshArgumentTypes as
     (s,t) <- infer (addArguments c as tvs) e
     at <- foldr (:->) t . apply s <$> mapM instantiate tvs
@@ -105,10 +109,11 @@ addArguments :: Context -> [[Id]] -> [Scheme] -> Context
 addArguments c = foldl extend c ... zip
     where (...) = (.).(.)
 
-generateContext :: Program -> Context
-generateContext = Context . Map.fromList . (>>= go)
-    where go (Topl n _ Nothing _)  = []
-          go (Topl n _ (Just t) _) = pure (n, t)
+generateContext :: Program -> Check Context
+generateContext prog = Context . Map.fromList <$> mapM go prog
+    where go :: Toplevel -> Check (Id, Scheme)
+          go (Topl n _ Nothing _)  = (n,) . generalize emptyContext <$> fresh
+          go (Topl n _ (Just t) _) = return (n, t)
 
 runCheck :: Check (Subst, Type) -> Either TypeError Scheme
 runCheck (Check m) = case evalState (runExceptT m) 0 of
@@ -263,6 +268,17 @@ infer c = \case
         return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 
     -- FIXME: Handle not factorizable types better
+    --
+    -- Also,
+    -- 
+    -- Initialize all let definitions with general types,
+    -- add them to the context, and type check them all at once.
+    -- This will allow for them to call on each other.
+    --
+    -- Best regards,
+    --
+    -- Nicklas Janse Botö
+    --
     Let ps e -> do
         is <- mapM (infer c) ps
         let (ss, ts) = unzip $ Map.elems is

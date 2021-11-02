@@ -38,6 +38,7 @@ library
       Frontend.Signe.Skel
       Frontend.Signe.Test
       Lib
+      Translate.Realize
       Type.Check
       Type.Error
   other-modules:

@@ -2,19 +2,22 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE NamedFieldPuns             #-}
 {-# LANGUAGE CPP, MagicHash             #-}
+{-# LANGUAGE BlockArguments             #-}
 {-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE LambdaCase                 #-}
 
 module Type.Check where
 
-import Frontend.SAST.Abs ( Type(..), Expr(..), Scheme(..), Id(Id) )
+import Frontend.SAST.Abs
+    ( Expr(..), Id(Id), Program, Scheme(..), Toplevel(..), Type(..) )
 import Type.Error ( TypeError(..), urk )
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Functor ( (<&>) )
-import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Function ( on )
+import Data.Bifunctor ( Bifunctor(bimap), second )
 import Data.Complex ( magnitude )
-import Data.List ( nub )
+import Control.Monad ( foldM, replicateM, unless )
 import Control.Monad.Except
     ( foldM,
       replicateM,
@@ -23,10 +26,7 @@ import Control.Monad.Except
       MonadError(throwError),
       ExceptT(..) )
 import Control.Monad.State
-    ( foldM,
-      replicateM,
-      unless,
-      gets,
+    ( gets,
       modify,
       evalState,
       MonadState,
@@ -35,17 +35,24 @@ import Control.Monad.State
 
 #ifdef DEBUG
 
-import Frontend.SAST.Par ( parseExpr )
+import Frontend.SAST.Par ( parseExpr, parse, parseType )
 import Debug.Trace ( trace )
 
 checkExpr :: Expr -> Either TypeError Scheme
 checkExpr = runCheck . infer emptyContext
 
 inferExpr :: String -> Scheme
-inferExpr = either (error . show) id . checkExpr . parseExpr
+inferExpr = either (errorWithoutStackTrace . show) id . checkExpr . parseExpr
+
+inferProgram :: String -> [(Id, Scheme)]
+inferProgram = either (errorWithoutStackTrace . show) id . checkProgram . parse
+
+inferFile :: FilePath -> IO ()
+inferFile path = putStrLn . concatMap put . inferProgram =<< readFile path
+    where put (i,s) = show i ++ " : " ++ show s ++ "\n"
 
 debug :: Monad m => String -> m ()
-debug = flip trace (return ()) 
+debug = flip trace (return ())
 
 #endif
 
@@ -59,8 +66,7 @@ lookupContext :: Context -> Id -> Check (Subst, Type)
 lookupContext (Context c) x =
   case Map.lookup x c of
     Nothing -> throwError $ VariableNotInScope x
-    Just s  -> do t <- instantiate s
-                  return (nullSubst, t)
+    Just s  -> (nullSubst,) <$> instantiate s
 
 extend :: Context -> ([Id], Scheme) -> Context
 extend (Context c) = Context . go
@@ -70,29 +76,53 @@ extend (Context c) = Context . go
               Map.insert x (Forall vs a) $ go (xs, Forall vs b)
           go _ = urk
 
-type Fresh = Int
+newtype Check a = Check (ExceptT TypeError (State Int) a)
+    deriving (Functor, Applicative, Monad, MonadState Int, MonadError TypeError)
 
-newtype Check a = Check (ExceptT TypeError (State Fresh) a)
-    deriving (Functor, Applicative, Monad, MonadState Fresh, MonadError TypeError)
+checkProgram :: Program -> Either TypeError [(Id, Scheme)]
+checkProgram = mapM <$> checkToplevel . generateContext <*> id
+
+checkToplevel :: Context -> Toplevel -> Either TypeError (Id, Scheme)
+checkToplevel c (Topl n as Nothing e) = (n,) <$> runCheck do
+    tvs <- generateFreshArgumentTypes as
+    (s,t) <- infer (addArguments c as tvs) e
+    (s,) . foldr (:->) t . apply s <$> mapM instantiate tvs
+checkToplevel c (Topl n as (Just es) e) = (n,) <$> runCheck do
+    tvs <- generateFreshArgumentTypes as
+    (s,t) <- infer (addArguments c as tvs) e
+    at <- foldr (:->) t . apply s <$> mapM instantiate tvs
+    et <- instantiate es
+    let (~~) = (==) `on` closeOver . (s,)
+    us <- unify at et
+    if et ~~ apply us at
+        then return (s, et)
+        else throwError $ TypeMismatch et at
+
+generateFreshArgumentTypes :: [[Id]] -> Check [Scheme]
+generateFreshArgumentTypes = mapM $ fmap (Forall []) . foldM (\b _ -> (b<>) <$> fresh) TypeUnit
+
+addArguments :: Context -> [[Id]] -> [Scheme] -> Context
+addArguments c = foldl extend c ... zip
+    where (...) = (.).(.)
+
+generateContext :: Program -> Context
+generateContext = Context . Map.fromList . (>>= go)
+    where go (Topl n _ Nothing _)  = []
+          go (Topl n _ (Just t) _) = pure (n, t)
 
 runCheck :: Check (Subst, Type) -> Either TypeError Scheme
 runCheck (Check m) = case evalState (runExceptT m) 0 of
     Left  e -> Left e
     Right s -> Right $ closeOver s
 
-closeOver :: (Map.Map Id Type, Type) -> Scheme
+closeOver :: (Subst, Type) -> Scheme
 closeOver (sub, ty) = normalize sc
   where sc = generalize emptyContext (apply sub ty)
 
 normalize :: Scheme -> Scheme
 normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
   where
-    ord = zip (nub $ fv body) letters
-
-    fv (TypeVar a) = [a]
-    fv (n :-> p)   = fv n <> fv p
-    fv (a :* b)    = fv a <> fv b
-    fv _           = []
+    ord = zip (Set.toList $ ftv body) letters
 
     normtype (a :-> b)   = normtype a :-> normtype b
     normtype (a :* b)    = normtype a :* normtype b
@@ -157,7 +187,7 @@ unify (TypeVar v) t = bind v t
 unify t (TypeVar v) = bind v t
 unify s t
     | s == t    = return nullSubst
-    | otherwise = throwError $ TypeMismatch s t
+    | otherwise = throwError $ TypeMismatch t s
 
 bind :: Id -> Type -> Check Subst
 bind v t
@@ -211,22 +241,16 @@ infer c = \case
         return (sb' ∘ sa' ∘ sb ∘ sa, apply sb' tb)
 
     Comp f g -> do
-        tf       <- fresh
-        tfg      <- fresh
-        tg       <- fresh
-        (sf, tf) <- infer c f
-        (sg, tg) <- infer (apply sf c) g
-        sz       <- unify (apply sg tf) (tf :-> tfg)
-        szz      <- unify (apply sz tg) (tfg :-> tg)
-
-        return (szz ∘ sz ∘ sg ∘ sf, apply szz (tf :-> tg))
+        let v = Id Nothing "I am too lazy at the moment"
+            e = Abs [v] (App f (App g (Var v)))
+        infer c e
 
     -- FIXME: impose orthogonality constraints when possible
     Ifq b t f -> do
         (s1,t1) <- infer c b
         (s2,t2) <- infer c t
         (s3,t3) <- infer c f
-        s4 <- unify TypeQubit t1
+        s4 <- unify t1 TypeQubit
         s5 <- unify t2 t3
         return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 
@@ -234,7 +258,7 @@ infer c = \case
         (s1,t1) <- infer c b
         (s2,t2) <- infer c t
         (s3,t3) <- infer c f
-        s4 <- unify TypeQubit t1
+        s4 <- unify t1 TypeQubit
         s5 <- unify t2 t3
         return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 
@@ -248,11 +272,10 @@ infer c = \case
             c''      = foldl extend c' $ zip vs ts'
 
         (se, te) <- infer c'' e
-
         return (foldl (∘) se ss, te)
 
-    Abs x e -> do
-        tv <- fresh
-        c' <- foldl extend c <$> mapM (\v -> ([v],) . Forall [] <$> fresh) x
+    Abs xs e -> do
+        tvs <- replicateM (length xs) fresh
+        let c' = foldl extend c (bimap pure (Forall []) <$> zip xs tvs)
         (s1, t1) <- infer c' e
-        return (s1, apply s1 tv :-> t1)
+        return (s1, apply s1 (foldr (:->) t1 tvs))

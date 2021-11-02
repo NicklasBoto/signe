@@ -21,4 +21,6 @@ parseToplevel :: String -> Toplevel
 parseToplevel = convertToplevel `ofParser` pToplevel
 
 parse :: String -> Program
-parse = convert `ofParser` pProgram
+parse s = case pProgram (resolveLayout True (myLexer s)) of
+    Right e -> convert e
+    Left  s -> error s

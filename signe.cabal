@@ -38,6 +38,8 @@ library
       Frontend.Signe.Skel
       Frontend.Signe.Test
       Lib
+      Translate.Reality.Check
+      Translate.Reality.Error
       Translate.Realize
       Type.Check
       Type.Error

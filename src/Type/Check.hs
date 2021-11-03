@@ -245,10 +245,9 @@ infer c = \case
         sb'      <- unify (apply sa' tb) TypeQubit
         return (sb' ∘ sa' ∘ sb ∘ sa, apply sb' tb)
 
-    Comp f g -> do
-        let v = Id Nothing "I am too lazy at the moment"
-            e = Abs [v] (App f (App g (Var v)))
-        infer c e
+    Comp f g -> infer c e
+        where v = Id Nothing "I am too lazy at the moment"
+              e = Abs [v] (App f (App g (Var v)))
 
     -- FIXME: impose orthogonality constraints when possible
     Ifq b t f -> do

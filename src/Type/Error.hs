@@ -1,6 +1,9 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns  #-}
+
 module Type.Error where
 
-import Frontend.SAST.Abs
+import Frontend.SAST.Abs ( Type, Expr, Id(..) )
 import Frontend.SAST.Print ()
 
 data TypeError
@@ -14,8 +17,11 @@ instance Show TypeError where
         "Couldn't match expected type '" ++ show e ++
         "' with actual type '" ++ show a ++ "'"
 
-    show (VariableNotInScope v) =
-        "Variable not in scope: " ++ show v
+    show (VariableNotInScope Id{pos=Nothing, name}) =
+        "Variable not in scope: " ++ show name
+
+    show (VariableNotInScope Id{..}) =
+        "Variable not in scope: " ++ show name ++ " at " ++ show pos
 
     show (InfiniteType v t) =
         "Occurs check, cannot construct the infinite type: " ++
@@ -23,7 +29,6 @@ instance Show TypeError where
     
     show (ScalarNotNormalized e) =
         "Scalar is not normalized: " ++ show e
-
 
 urk :: a
 urk = error "urk"

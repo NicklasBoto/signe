@@ -11,12 +11,13 @@ module Translate.FQC.Unitary
 import Prelude hiding ( (<>) )
 import Data.Data ( Data )
 import Text.PrettyPrint
-    ( (<+>),
+    ( ($$),
+      (<+>),
       (<>),
       braces,
-      brackets,
       double,
       int,
+      nest,
       punctuate,
       render,
       sep,
@@ -56,6 +57,6 @@ showU (Par   us) = sep $ punctuate "⊗" $ map showU us
 showU (Ser   us) = sep $ punctuate "⊙" $ map showU us
 showU (Perm  is) = braces $ sep $ map int is
 showU (Cond t c) = showU t <+> "if" <+> showU c
-showU (Rot (i,j) (k,l))
-    = brackets $ sep $ mid "|" $ map (text . show) [i,j,k,l]
-    where mid x xs = let (a,b) = splitAt 2 xs in a ++ x : b
+showU (Rot (i,j) (k,l)) = "⎡" <> a <+> b <> "⎤"
+                $$ nest 3 "⎣" <> c <+> d <> "⎦"
+    where [a,b,c,d] = map (text . show) [i,j,k,l]

@@ -40,11 +40,14 @@ notU = Rot (0,1) (1,0)
 δ :: FQC
 δ = FQC
     { input   = 1
-    , heap    = 0
+    , heap    = 1
     , output  = 2
     , garbage = 0
     , unitary = Cond notU (idU 1)
     }
+
+del :: FQC
+del = δ
 
 qnot :: FQC
 qnot = FQC

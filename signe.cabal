@@ -56,6 +56,7 @@ library
     , base >=4.7 && <5
     , containers
     , mtl
+    , pretty
   default-language: Haskell2010
 
 executable signe
@@ -73,6 +74,7 @@ executable signe
     , base >=4.7 && <5
     , containers
     , mtl
+    , pretty
     , signe
   default-language: Haskell2010
 
@@ -92,5 +94,6 @@ test-suite signe-test
     , base >=4.7 && <5
     , containers
     , mtl
+    , pretty
     , signe
   default-language: Haskell2010

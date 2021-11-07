@@ -6,6 +6,7 @@
 module Translate.FQC.FQC where
 
 import Translate.FQC.Unitary
+import Translate.FQC.Matrix
 
 -- H input heap
 -- h initialisation constant

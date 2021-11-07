@@ -58,6 +58,7 @@ library
     , base >=4.7 && <5
     , containers
     , hmatrix
+    , lens
     , mtl
     , pretty
   default-language: Haskell2010
@@ -77,6 +78,7 @@ executable signe
     , base >=4.7 && <5
     , containers
     , hmatrix
+    , lens
     , mtl
     , pretty
     , signe
@@ -98,6 +100,7 @@ test-suite signe-test
     , base >=4.7 && <5
     , containers
     , hmatrix
+    , lens
     , mtl
     , pretty
     , signe

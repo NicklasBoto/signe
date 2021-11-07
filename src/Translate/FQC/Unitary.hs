@@ -1,12 +1,17 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE FlexibleInstances  #-}
+{-# LANGUAGE FlexibleContexts   #-}
 {-# LANGUAGE PatternSynonyms    #-}
+{-# LANGUAGE TypeFamilies       #-}
 {-# LANGUAGE DerivingVia        #-}
 
 module Translate.FQC.Unitary
     ( C
+    , complex
     , Unitary(..)
     , pattern (:+)
+    , arity
     ) where
 
 import Prelude hiding ( (<>) )
@@ -24,13 +29,21 @@ import Text.PrettyPrint
       sep,
       text,
       Doc )
-import qualified Data.Complex as Cx ( Complex(..) )
-import Control.Monad
+import qualified Data.Complex as Cx ( Complex(..), realPart )
+import Control.Monad ( guard )
+import Data.Function ( on )
+import Foreign.Storable ( Storable )
+import Numeric.LinearAlgebra ( RealOf, Element(..), Product(..) )
+
+type instance RealOf C = Double
 
 newtype C = C (Cx.Complex Double)
-    deriving (Num, Fractional, Floating, Eq)
+    deriving (Eq, Num, Ord, Fractional, Floating, Storable)
         via (Cx.Complex Double)
     deriving Data
+
+instance Ord (Cx.Complex Double) where
+    (<=) = (<=) `on` Cx.realPart . abs
 
 instance Show C where
     show = render . showC
@@ -42,6 +55,9 @@ showC (C (r Cx.:+ i)) = double r <+> "+" <+> double i <> "i"
 
 pattern (:+) :: Double -> Double -> C
 pattern (:+) r i = C (r Cx.:+ i)
+
+complex :: C -> Cx.Complex Double
+complex (C x) = x
 
 data Unitary 
     = Par [Unitary]

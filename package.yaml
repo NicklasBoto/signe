@@ -29,6 +29,7 @@ dependencies:
 - containers
 - mtl
 - pretty
+- hmatrix
 
 library:
   source-dirs: src

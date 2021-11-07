@@ -4,8 +4,9 @@
 {-# LANGUAGE DerivingVia        #-}
 
 module Translate.FQC.Unitary
-    ( C(..)
+    ( C
     , Unitary(..)
+    , pattern (:+)
     ) where
 
 import Prelude hiding ( (<>) )
@@ -24,6 +25,7 @@ import Text.PrettyPrint
       text,
       Doc )
 import qualified Data.Complex as Cx ( Complex(..) )
+import Control.Monad
 
 newtype C = C (Cx.Complex Double)
     deriving (Num, Fractional, Floating, Eq)
@@ -60,3 +62,19 @@ showU (Cond t c) = showU t <+> "if" <+> showU c
 showU (Rot (i,j) (k,l)) = "⎡" <> a <+> b <> "⎤"
                 $$ nest 3 "⎣" <> c <+> d <> "⎦"
     where [a,b,c,d] = map (text . show) [i,j,k,l]
+
+arity :: Unitary -> Maybe Int
+arity (Par [])     = return 0
+arity (Par (x:xs)) = (+) <$> arity x <*> arity (Par xs)
+arity (Ser [])     = return 0
+arity (Ser xs) = do
+    as@(a:_) <- mapM arity xs
+    guard $ all (==a) as
+    return a
+arity (Perm xs)  = return $ length xs
+arity (Cond t c) = do
+    m <- arity t
+    n <- arity c
+    guard (m == n)
+    return m 
+arity (Rot _ _) = return 1

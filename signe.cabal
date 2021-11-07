@@ -38,7 +38,9 @@ library
       Frontend.Signe.Skel
       Frontend.Signe.Test
       Lib
+      Translate.Compile.Compile
       Translate.FQC.FQC
+      Translate.FQC.Matrix
       Translate.FQC.Unitary
       Translate.Reality.Check
       Translate.Reality.Error
@@ -55,6 +57,7 @@ library
       array
     , base >=4.7 && <5
     , containers
+    , hmatrix
     , mtl
     , pretty
   default-language: Haskell2010
@@ -73,6 +76,7 @@ executable signe
       array
     , base >=4.7 && <5
     , containers
+    , hmatrix
     , mtl
     , pretty
     , signe
@@ -93,6 +97,7 @@ test-suite signe-test
       array
     , base >=4.7 && <5
     , containers
+    , hmatrix
     , mtl
     , pretty
     , signe

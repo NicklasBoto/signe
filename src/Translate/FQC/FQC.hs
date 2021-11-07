@@ -5,7 +5,6 @@
 
 module Translate.FQC.FQC where
 
-import Data.Complex
 import Translate.FQC.Unitary
 
 -- H input heap

@@ -28,6 +28,10 @@ instance Show FQC where
         , "φ: " , show unitary
         ]
 
+test :: Unitary
+test = Par [ notU, unitary had ]
+
+
 φC :: Unitary
 φC = undefined
 

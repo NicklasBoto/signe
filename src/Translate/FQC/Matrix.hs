@@ -22,8 +22,9 @@ matrix :: Unitary -> Maybe Matrix
 matrix (Par  xs) = foldl L.kronecker (L.ident 1) <$> mapM matrix xs
 matrix (Ser  xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
 matrix (Perm ps) = return $ permutationMatrix $ scalePermutation ps
-matrix (Cond t c) = (guard =<< ((==) <$> arity t <*> arity c)) >> (<>) <$> matrix t <*> matrix c
 matrix (Rot (i,j) (k,l)) = return $ (2><2) $ map complex [i,j,k,l]
+matrix (Cond t c) = do
+    Nothing
 
 permutationMatrix :: [Int] -> Matrix
 permutationMatrix = join (on (><) length) 

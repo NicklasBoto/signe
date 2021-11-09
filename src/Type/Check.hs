@@ -96,9 +96,9 @@ checkToplevel cc (Topl n as (Just es) e) = (n,) <$> runCheck do
     (s,t) <- infer (addArguments c as tvs) e
     at <- foldr (:->) t . apply s <$> mapM instantiate tvs
     et <- instantiate es
-    let (~~) = (==) `on` closeOver . (s,)
+    let (≃) = (==) `on` closeOver . (s,)
     us <- unify at et
-    if et ~~ apply us at
+    if et ≃ apply us at
         then return (s, et)
         else throwError $ TypeMismatch et at
 

@@ -7,6 +7,7 @@ module Translate.FQC.FQC where
 
 import Translate.FQC.Unitary
 import Translate.FQC.Matrix
+import Control.Monad
 
 -- H input heap
 -- h initialisation constant
@@ -27,6 +28,10 @@ instance Show FQC where
         , "G: " , show garbage , "\n"
         , "φ: " , show unitary
         ]
+
+test :: Unitary
+test = Par [ notU, unitary had ]
+
 
 φC :: Unitary
 φC = undefined
@@ -66,3 +71,11 @@ had = FQC
     , garbage = 0
     , unitary = Rot (λ,λ) (λ,-λ) 
     } where λ = 1 / sqrt 2
+
+mat1 = Rot (0.8366533864541833 :+ (-0.5477327002605806), 0) (0, -0.49019607843137253 :+ 0.871612187093838)
+mat2 = Rot (-0.8346613545816733 :+ 0.550763491135611, 0) (0, 1)
+mat3 = Rot (0.035856573705179286 :+ 0.8235294117647058, 0.566139) (-0.566139, 0.035856573705179286 :+ (-0.8235294117647058))
+mat4 = Rot (-0.21115537848605578 :+ (-0.4230769230769231), -0.881147) (-0.881147, 0.21115537848605578 :+ (-0.4230769230769231))
+mat5 = Rot (-0.7211155378486056 :+ (-0.5616438356164384), -0.008 :+ 0.4055669895188358) (-0.405646, -0.5473130239812032 :+ (-0.7320518224778756))
+
+combs = Par . map Ser . flip replicateM [mat1, mat2, mat3, mat4, mat5]

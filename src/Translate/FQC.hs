@@ -1,3 +1,10 @@
+{-|
+Module      : FQC
+Description : Finite quantum computations
+Stability   : experimental
+
+Exports the datatype for finite quantum computations as well as their predefined morphisms
+-}
 module Translate.FQC
     ( FQC(..)
     ) where

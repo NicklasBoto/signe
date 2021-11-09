@@ -1,5 +1,12 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
+{-|
+Module      : SAST.Print
+Description : Printing functions
+Stability   : stable
+
+Exports pretty-printing functions
+-}
 module Frontend.SAST.Print where
 
 import Frontend.SAST.Abs

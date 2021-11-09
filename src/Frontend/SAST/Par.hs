@@ -1,3 +1,10 @@
+{-|
+Module      : SAST.Par
+Description : Internal parsers
+Stability   : stable
+
+Exports parser for use internally in the compiler
+-}
 module Frontend.SAST.Par 
     ( parseExpr
     , parseType

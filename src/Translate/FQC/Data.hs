@@ -1,8 +1,15 @@
 {-# LANGUAGE RecordWildCards #-}
 
+{-|
+Module      : FQC.Data
+Description : Finite quantum computations
+Stability   : stable
+
+Exports the datatype for finite quantum computations
+-}
 module Translate.FQC.Data where
 
-import Translate.Unitary.Data
+import Translate.Unitary.Data ( Unitary )
 
 data FQC = FQC
     { input, heap, output, garbage :: Int

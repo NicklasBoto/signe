@@ -6,6 +6,13 @@
 {-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE LambdaCase                 #-}
 
+{-|
+Module      : Type.Check
+Description : Hindley-Milner typechecker
+Stability   : stable
+
+Initial Hindley-Milner typechecking of Signe
+-}
 module Type.Check where
 
 #define DEBUG

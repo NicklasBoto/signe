@@ -4,7 +4,7 @@
 module Translate.Compile.Compile where
 
 import Frontend.SAST.Abs
-import Translate.FQC.FQC
+import Translate.FQC.Data
 import Data.Map
 
 data Comp = Comp { usedContext :: [String]

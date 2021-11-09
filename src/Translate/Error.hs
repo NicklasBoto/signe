@@ -5,6 +5,8 @@ module Translate.Error
     , pattern Urk
     ) where
 
+import Translate.Unitary.Data
+
 -- | The set of errors that can occur during circuit translation and compilation
 data TranslationError
     -- | General failure for MonadFail instance, should not occur

@@ -39,11 +39,15 @@ library
       Frontend.Signe.Test
       Lib
       Translate.Compile.Compile
-      Translate.FQC.FQC
-      Translate.FQC.Matrix
-      Translate.FQC.Unitary
+      Translate.Error
+      Translate.FQC
+      Translate.FQC.Data
+      Translate.Matrix
       Translate.Reality.Check
       Translate.Reality.Error
+      Translate.Result
+      Translate.Unitary
+      Translate.Unitary.Data
       Type.Check
       Type.Error
   other-modules:

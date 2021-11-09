@@ -1,33 +1,10 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE KindSignatures  #-}
-{-# LANGUAGE Rank2Types      #-}
-{-# LANGUAGE DataKinds       #-}
+module Translate.FQC
+    ( FQC(..)
+    ) where
 
-module Translate.FQC.FQC where
-
-import Translate.FQC.Unitary
-import Translate.FQC.Matrix
+import Translate.Unitary.Data
+import Translate.FQC.Data
 import Control.Monad
-
--- H input heap
--- h initialisation constant
--- A input 
--- B output
--- G garbage
-
-data FQC = FQC
-    { input, heap, output, garbage :: Int
-    , unitary :: Unitary
-    }
-
-instance Show FQC where
-    show FQC{..} = mconcat
-        [ "A: " , show input   , "\n"
-        , "H: " , show heap    , "\n"
-        , "B: " , show output  , "\n"
-        , "G: " , show garbage , "\n"
-        , "φ: " , show unitary
-        ]
 
 test :: Unitary
 test = Par [ notU, unitary had ]

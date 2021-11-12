@@ -14,7 +14,7 @@ Stability   : stable
 Exports the datatype for unitary transformations
 -}
 module Translate.Unitary.Data
-    ( C
+    ( C(..)
     , complex
     , Unitary(..)
     , pattern (:+)
@@ -38,7 +38,7 @@ import Text.PrettyPrint
 import qualified Data.Complex as Cx ( Complex(..), realPart )
 import Foreign.Storable ( Storable )
 import Data.Function ( on )
-import Numeric.LinearAlgebra ( RealOf, Element(..), Product(..) )
+import Numeric.LinearAlgebra ( RealOf, Element(..), Product(..), dot, fromList )
 
 type instance RealOf C = Double
 

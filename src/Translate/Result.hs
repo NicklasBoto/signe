@@ -1,5 +1,5 @@
-{-# LANGUAGE GeneralisedNewtypeDeriving  #-}
-{-# LANGUAGE PatternSynonyms             #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms            #-}
 
 {-|
 Module      : Result
@@ -12,6 +12,10 @@ module Translate.Result
     ( Result
     , module Translate.Error
     , guard
+    , equal
+    , throw
+    , runResult
+    , testResult
     ) where
 
 import Translate.Error ( TranslationError(..), pattern Urk )
@@ -36,3 +40,6 @@ guard False e = throwError e
 
 equal :: Eq a => a -> a -> TranslationError -> Result a
 equal x y e = guard (x == y) e >> return x
+
+throw :: TranslationError -> Result notATotalProgram
+throw = throwError

@@ -12,10 +12,11 @@ module Translate.FQC
 import Translate.Unitary.Data
 import Translate.FQC.Data
 import Control.Monad
+import Translate.Matrix
+import Translate.Result
 
 test :: Unitary
 test = Par [ notU, unitary had ]
-
 
 φC :: Unitary
 φC = undefined
@@ -38,6 +39,9 @@ notU = Rot (0,1) (1,0)
 del :: FQC
 del = δ
 
+cnot :: Unitary
+cnot = Cond (Rot (0,1) (1,0)) (Perm [0])
+
 qnot :: FQC
 qnot = FQC
     { input   = 1
@@ -56,6 +60,7 @@ had = FQC
     , unitary = Rot (λ,λ) (λ,-λ) 
     } where λ = 1 / sqrt 2
 
+mat1, mat2, mat3, mat4, mat5 :: Unitary
 mat1 = Rot (0.8366533864541833 :+ (-0.5477327002605806), 0) (0, -0.49019607843137253 :+ 0.871612187093838)
 mat2 = Rot (-0.8346613545816733 :+ 0.550763491135611, 0) (0, 1)
 mat3 = Rot (0.035856573705179286 :+ 0.8235294117647058, 0.566139) (-0.566139, 0.035856573705179286 :+ (-0.8235294117647058))

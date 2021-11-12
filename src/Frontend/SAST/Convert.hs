@@ -1,3 +1,10 @@
+{-|
+Module      : SAST.Convert
+Description : Convertions from Signe to SAST
+Stability   : stable
+
+Conversions from grammar generated AST to SAST
+-}
 module Frontend.SAST.Convert where
 
 import qualified Frontend.SAST.Abs  as SAST

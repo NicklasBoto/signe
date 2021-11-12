@@ -6,6 +6,13 @@
 {-# LANGUAGE TypeFamilies       #-}
 {-# LANGUAGE DerivingVia        #-}
 
+{-|
+Module      : Unitary.Data
+Description : Unitary datatype
+Stability   : stable
+
+Exports the datatype for unitary transformations
+-}
 module Translate.Unitary.Data
     ( C
     , complex

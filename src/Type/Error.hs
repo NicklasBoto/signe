@@ -1,6 +1,13 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns  #-}
 
+{-|
+Module      : Type.Error
+Description : Typechecking errors
+Stability   : stable
+
+Errors that occur during initial typechecking
+-}
 module Type.Error where
 
 import Frontend.SAST.Abs ( Type, Expr, Id(..) )

@@ -1,6 +1,13 @@
 {-# LANGUAGE GeneralisedNewtypeDeriving  #-}
 {-# LANGUAGE PatternSynonyms             #-}
 
+{-|
+Module      : Result
+Description : Translation monad
+Stability   : stable
+
+Exports the error handling monad for translation
+-}
 module Translate.Result
     ( Result
     , module Translate.Error

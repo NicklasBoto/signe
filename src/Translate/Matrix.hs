@@ -2,6 +2,13 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE PatternSynonyms      #-}
 
+{-|
+Module      : Matrix
+Description : Matrix representations
+Stability   : experimental
+
+Exports functions transforming unitary transformations to their matrix representations
+-}
 module Translate.Matrix where
 
 import Prelude hiding ( (<>) )

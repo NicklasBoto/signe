@@ -1,3 +1,10 @@
+{-|
+Module      : SAST.Abs
+Description : Simplified AST
+Stability   : stable
+
+Exports the AST for the initial internal language
+-}
 module Frontend.SAST.Abs where
 
 import Data.Complex ( Complex )

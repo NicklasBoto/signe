@@ -35,7 +35,7 @@ import Text.PrettyPrint
       sep,
       text,
       Doc )
-import qualified Data.Complex as Cx ( Complex(..), realPart )
+import qualified Data.Complex as Cx ( Complex(..), realPart, magnitude )
 import Foreign.Storable ( Storable )
 import Data.Function ( on )
 import Numeric.LinearAlgebra ( RealOf, Element(..), Product(..), dot, fromList )
@@ -54,7 +54,7 @@ instance Show C where
     show = render . showC
 
 instance Eq C where
-    (==) (C a) (C b) = abs (magnitude a - magnitude b) < 0.001
+    (==) (C a) (C b) = abs (Cx.magnitude a - Cx.magnitude b) < 0.001
 
 showC :: C -> Doc
 showC (C (r Cx.:+ 0)) = double r 

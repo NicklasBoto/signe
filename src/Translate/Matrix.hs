@@ -82,7 +82,7 @@ eqC :: L.C -> L.C -> Bool
 eqC a b = L.magnitude  a - L.magnitude b < 1
 
 par :: (Unitary, Unitary, Unitary) -> Matrix
-par (a,b,c) = fromJust $ matrix $ Par [a,b,c]
+par (a,b,c) = testResult $ matrix $ Par [a,b,c]
 
 eqMat :: Matrix -> Matrix -> Bool
 eqMat a b = and $ eqMat' a b
@@ -91,7 +91,7 @@ eqMat' :: Matrix -> Matrix -> [Bool]
 eqMat' a b = zipWith eqC ((L.toList . L.flatten) a) (( L.toList . L.flatten) b)
 
 ser :: (Unitary, Unitary, Unitary) -> Matrix
-ser (a,b,c) = fromJust $ matrix $ Ser [a,b,c]
+ser (a,b,c) = testResult $ matrix $ Ser [a,b,c]
 
 checkPars :: [(Unitary, Unitary, Unitary)] -> [Matrix] -> Bool
 checkPars uPairs mats = and $ checkPars' uPairs mats

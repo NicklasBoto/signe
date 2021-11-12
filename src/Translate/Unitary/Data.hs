@@ -43,7 +43,7 @@ import Numeric.LinearAlgebra ( RealOf, Element(..), Product(..), dot, fromList )
 type instance RealOf C = Double
 
 newtype C = C (Cx.Complex Double)
-    deriving (Eq, Num, Ord, Fractional, Floating, Storable)
+    deriving (Num, Fractional, Floating, Storable)
         via (Cx.Complex Double)
     deriving Data
 
@@ -52,6 +52,9 @@ instance Ord (Cx.Complex Double) where
 
 instance Show C where
     show = render . showC
+
+instance Eq C where
+    (==) (C a) (C b) = abs (magnitude a - magnitude b) < 0.001
 
 showC :: C -> Doc
 showC (C (r Cx.:+ 0)) = double r 

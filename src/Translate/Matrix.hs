@@ -46,7 +46,7 @@ matrix (Ser  xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
 matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
 matrix (Rot  u v) = orthogonal u v  $> (2><2) (crotations u v)
 matrix (Cond t c) = on equalM arity t c (ConditionalArityMismatch t c)
-                >>= liftM2 (+) <$> (matrix t <⊗>) . proj0 <*> (matrix c <⊗>) . proj1
+                >>= liftM2 (+) <$> (matrix t <⊗>) . proj1 <*> (matrix c <⊗>) . proj0
 
 proj :: L.Vector L.C -> Matrix
 proj = liftM2 (<>) L.asColumn L.asRow

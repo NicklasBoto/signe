@@ -22,9 +22,14 @@ import Data.Functor
 import Control.Monad ( join, replicateM, liftM2 )
 import Data.List ( transpose, permutations )
 import Translate.Result
+    ( TranslationError(RotationNotOrthogonal, ConditionalArityMismatch,
+                       MalformedPermutationPattern),
+      guard,
+      Result,
+      testResult,
+      equal )
 
 type Matrix = L.Matrix L.C
-
 
 instance {-# OVERLAPS #-} Show Matrix where
     show = L.dispcf 3

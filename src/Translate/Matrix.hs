@@ -34,18 +34,19 @@ type Matrix = L.Matrix L.C
 instance {-# OVERLAPS #-} Show Matrix where
     show = L.dispcf 3
 
+(⊗) :: Matrix -> Matrix -> Matrix
+(⊗) = L.kronecker
+
+(<⊗>) :: Result Matrix -> Matrix -> Result Matrix
+(<⊗>) = flip $ (<$>) . (⊗)
+
 matrix :: Unitary -> Result Matrix
-matrix (Par  xs) = foldl L.kronecker (L.ident 1) <$> mapM matrix xs
-matrix (Ser  xs) = foldl (<>)        (L.ident 2) <$> mapM matrix xs
+matrix (Par  xs) = foldl (⊗) (L.ident 1) <$> mapM matrix xs
+matrix (Ser  xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
 matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
-matrix (Rot u v) = orthogonal u v  $> (2><2) (crotations u v)
-matrix (Cond t c) = do
-  a <- equalM (arity t) (arity c) $ ConditionalArityMismatch t c
-
-  mt <- matrix t
-  mc <- matrix c
-
-  return $ proj0 a `L.kronecker` mc + proj1 a `L.kronecker` mt
+matrix (Rot  u v) = orthogonal u v  $> (2><2) (crotations u v)
+matrix (Cond t c) = on equalM arity t c (ConditionalArityMismatch t c)
+                >>= liftM2 (+) <$> (matrix t <⊗>) . proj0 <*> (matrix c <⊗>) . proj1
 
 proj :: L.Vector L.C -> Matrix
 proj = liftM2 (<>) L.asColumn L.asRow

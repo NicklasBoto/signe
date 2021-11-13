@@ -51,7 +51,6 @@ transComplex x = case x of
   Frontend.Signe.Abs.CMul complex1 complex2 -> failure x
 transPattern :: Frontend.Signe.Abs.Pattern -> Result
 transPattern x = case x of
-  Frontend.Signe.Abs.Pattern patternvar -> failure x
   Frontend.Signe.Abs.Patterns patternvars -> failure x
 transPatternVar :: Frontend.Signe.Abs.PatternVar -> Result
 transPatternVar x = case x of

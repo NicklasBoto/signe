@@ -18,7 +18,7 @@ import qualified Numeric.LinearAlgebra as L
 import Control.Lens ( (.~), element )
 import Data.Function ( on )
 import Data.Maybe (fromJust)
-import Data.Functor
+import Data.Functor ( ($>) )
 import Control.Monad ( join, replicateM, liftM2 )
 import Data.List ( transpose, permutations )
 import Translate.Result
@@ -27,7 +27,7 @@ import Translate.Result
       guard,
       Result,
       testResult,
-      equal )
+      equalM )
 
 type Matrix = L.Matrix L.C
 
@@ -40,14 +40,12 @@ matrix (Ser  xs) = foldl (<>)        (L.ident 2) <$> mapM matrix xs
 matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
 matrix (Rot u v) = orthogonal u v  $> (2><2) (crotations u v)
 matrix (Cond t c) = do
-  at <- arity t
-  ac <- arity c
-  equal at ac $ ConditionalArityMismatch (t,at) (c,ac)
+  a <- equalM (arity t) (arity c) $ ConditionalArityMismatch t c
 
   mt <- matrix t
   mc <- matrix c
 
-  return $ proj0 ac `L.kronecker` mc + proj1 at `L.kronecker` mt
+  return $ proj0 a `L.kronecker` mc + proj1 a `L.kronecker` mt
 
 proj :: L.Vector L.C -> Matrix
 proj = liftM2 (<>) L.asColumn L.asRow

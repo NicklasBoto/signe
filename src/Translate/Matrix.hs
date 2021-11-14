@@ -23,7 +23,8 @@ import Control.Monad ( join, replicateM, liftM2 )
 import Data.List ( transpose, permutations, nub )
 import Translate.Result
     ( TranslationError(RotationNotOrthogonal, ConditionalArityMismatch,
-                       MalformedPermutationPattern),
+                       MalformedPermutationPattern, SerialArityMismatch,
+                       ParallelArityMismatch),
       guard,
       Result,
       testResult,
@@ -34,24 +35,17 @@ type Matrix = L.Matrix L.C
 instance {-# OVERLAPS #-} Show Matrix where
     show = L.dispcf 3
 
-matrix :: Unitary -> Result Matrix
-matrix (Par  xs) = checkPar xs >> foldl L.kronecker (L.ident 1) <$> mapM matrix xs
-matrix (Ser  xs) = checkSer xs >> foldl (<>)        (L.ident 2) <$> mapM matrix xs
-matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
-matrix (Rot u v) = orthogonal u v  $> (2><2) (crotations u v)
-matrix (Cond t c) = do
-  at <- arity t
-  ac <- arity c
-  equal at ac $ ConditionalArityMismatch (t,at) (c,ac)
+
 (⊗) :: Matrix -> Matrix -> Matrix
 (⊗) = L.kronecker
 
 (<⊗>) :: Result Matrix -> Matrix -> Result Matrix
 (<⊗>) = flip $ (<$>) . (⊗)
 
+-- Do we already check for Ser arity errors in arity function?
 matrix :: Unitary -> Result Matrix
-matrix (Par  xs) = foldl (⊗) (L.ident 1) <$> mapM matrix xs
-matrix (Ser  xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
+matrix (Par  xs) = checkPar xs >> foldl (⊗) (L.ident 1) <$> mapM matrix xs
+matrix (Ser  xs) = checkSer xs >> foldl (<>) (L.ident 2) <$> mapM matrix xs
 matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
 matrix (Rot  u v) = orthogonal u v  $> (2><2) (crotations u v)
 matrix (Cond t c) = on equalM arity t c (ConditionalArityMismatch t c)
@@ -73,12 +67,12 @@ checkPattern xs = guard (xs `elem` permutations [0..length xs-1])
 checkPar :: [Unitary] -> Result ()
 checkPar xs = do
   x <- mapM arity xs
-  guard (length (nub x) == 0) $ ParallelArityMismatch xs
+  guard (length (nub x) == 1) $ ParallelArityMismatch xs
   
 checkSer :: [Unitary] -> Result ()
 checkSer xs = do
   x <- mapM arity xs
-  guard (length (nub x) == 0) $ SerialArityMismatch xs
+  guard (length (nub x) == 1) $ SerialArityMismatch xs
 
 eq0 :: [Int] -> Bool
 eq0 = (==) 0 . length . nub

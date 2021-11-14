@@ -20,7 +20,7 @@ import Data.Function ( on )
 import Data.Maybe (fromJust)
 import Data.Functor
 import Control.Monad ( join, replicateM, liftM2 )
-import Data.List ( transpose, permutations )
+import Data.List ( transpose, permutations, nub )
 import Translate.Result
 
 type Matrix = L.Matrix L.C
@@ -30,8 +30,8 @@ instance {-# OVERLAPS #-} Show Matrix where
     show = L.dispcf 3
 
 matrix :: Unitary -> Result Matrix
-matrix (Par  xs) = foldl L.kronecker (L.ident 1) <$> mapM matrix xs
-matrix (Ser  xs) = foldl (<>)        (L.ident 2) <$> mapM matrix xs
+matrix (Par  xs) = checkPar xs >> foldl L.kronecker (L.ident 1) <$> mapM matrix xs
+matrix (Ser  xs) = checkSer xs >> foldl (<>)        (L.ident 2) <$> mapM matrix xs
 matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
 matrix (Rot u v) = orthogonal u v  $> (2><2) (crotations u v)
 matrix (Cond t c) = do
@@ -56,6 +56,19 @@ proj1 = ((proj . L.fromList) .) . (.~ 1) . element <*> flip replicate 0 . (2^)
 checkPattern :: [Int] -> Result ()
 checkPattern xs = guard (xs `elem` permutations [0..length xs-1])
                         $ MalformedPermutationPattern xs
+
+checkPar :: [Unitary] -> Result ()
+checkPar xs = do
+  x <- mapM arity xs
+  guard (length (nub x) == 0) $ ParallelArityMismatch xs
+  
+checkSer :: [Unitary] -> Result ()
+checkSer xs = do
+  x <- mapM arity xs
+  guard (length (nub x) == 0) $ SerialArityMismatch xs
+
+eq0 :: [Int] -> Bool
+eq0 = (==) 0 . length . nub
 
 orthogonal :: (C, C) -> (C, C) -> Result ()
 orthogonal u v = guard (inner u v == 0)
@@ -104,6 +117,10 @@ checkSers uPairs mats = and $ checkPars' uPairs mats
 
 checkSers' :: [(Unitary, Unitary, Unitary)] -> [Matrix] -> [Bool]
 checkSers' uPairs mats = zipWith eqMat mats (map ser uPairs)
+
+matTest :: [Unitary]
+matTest = [a,b,c]
+  where (a,b,c) = head matPairsTest
 
 -- Pairs of unitary Rot matrices to test against Par and Ser operations
 matPairsTest :: [(Unitary, Unitary, Unitary)]

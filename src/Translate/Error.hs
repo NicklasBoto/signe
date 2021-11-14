@@ -22,10 +22,14 @@ data TranslationError
     | ConditionalArityMismatch (Unitary, Int) (Unitary, Int)
     -- | Non-equal arities of serial unitary transformations
     | SerialArityMismatch [Unitary]
+    -- | Non-equal arities of parallel unitary transformations
+    | ParallelArityMismatch [Unitary]
     -- | Pattern is not a permutation of [0..n-1]
     | MalformedPermutationPattern [Int]
     -- | A rotation operation is not unitary
     | RotationNotOrthogonal Unitary
+    
+
 
 -- | Placeholder error, or impossible error
 pattern Urk :: TranslationError

@@ -50,7 +50,7 @@ data Complex
     | CMul Complex Complex
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data Pattern = Pattern PatternVar | Patterns [PatternVar]
+data Pattern = Patterns [PatternVar]
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data PatternVar = PVar Id

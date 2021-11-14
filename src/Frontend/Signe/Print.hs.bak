@@ -164,7 +164,6 @@ instance Print Frontend.Signe.Abs.Complex where
 
 instance Print Frontend.Signe.Abs.Pattern where
   prt i e = case e of
-    Frontend.Signe.Abs.Pattern patternvar -> prPrec i 0 (concatD [prt 0 patternvar])
     Frontend.Signe.Abs.Patterns patternvars -> prPrec i 0 (concatD [doc (showString "("), prt 0 patternvars, doc (showString ")")])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, prt 0 xs]

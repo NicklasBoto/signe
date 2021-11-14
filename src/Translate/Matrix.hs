@@ -18,13 +18,18 @@ import qualified Numeric.LinearAlgebra as L
 import Control.Lens ( (.~), element )
 import Data.Function ( on )
 import Data.Maybe (fromJust)
-import Data.Functor
+import Data.Functor ( ($>) )
 import Control.Monad ( join, replicateM, liftM2 )
 import Data.List ( transpose, permutations, nub )
 import Translate.Result
+    ( TranslationError(RotationNotOrthogonal, ConditionalArityMismatch,
+                       MalformedPermutationPattern),
+      guard,
+      Result,
+      testResult,
+      equalM )
 
 type Matrix = L.Matrix L.C
-
 
 instance {-# OVERLAPS #-} Show Matrix where
     show = L.dispcf 3
@@ -38,11 +43,19 @@ matrix (Cond t c) = do
   at <- arity t
   ac <- arity c
   equal at ac $ ConditionalArityMismatch (t,at) (c,ac)
+(⊗) :: Matrix -> Matrix -> Matrix
+(⊗) = L.kronecker
 
-  mt <- matrix t
-  mc <- matrix c
+(<⊗>) :: Result Matrix -> Matrix -> Result Matrix
+(<⊗>) = flip $ (<$>) . (⊗)
 
-  return $ proj0 ac `L.kronecker` mc + proj1 at `L.kronecker` mt
+matrix :: Unitary -> Result Matrix
+matrix (Par  xs) = foldl (⊗) (L.ident 1) <$> mapM matrix xs
+matrix (Ser  xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
+matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
+matrix (Rot  u v) = orthogonal u v  $> (2><2) (crotations u v)
+matrix (Cond t c) = on equalM arity t c (ConditionalArityMismatch t c)
+                >>= liftM2 (+) <$> (matrix t <⊗>) . proj1 <*> (matrix c <⊗>) . proj0
 
 proj :: L.Vector L.C -> Matrix
 proj = liftM2 (<>) L.asColumn L.asRow

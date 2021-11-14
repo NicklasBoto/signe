@@ -19,7 +19,7 @@ data TranslationError
     -- | General failure for MonadFail instance, should not occur
     = Fail String
     -- | Non-equal arites of unitary conditionals
-    | ConditionalArityMismatch (Unitary, Int) (Unitary, Int)
+    | ConditionalArityMismatch Unitary Unitary
     -- | Non-equal arities of serial unitary transformations
     | SerialArityMismatch [Unitary]
     -- | Non-equal arities of parallel unitary transformations

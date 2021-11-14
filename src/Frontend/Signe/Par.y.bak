@@ -193,8 +193,7 @@ Complex :: { Frontend.Signe.Abs.Complex }
 Complex : Complex1 { $1 }
 
 Pattern :: { Frontend.Signe.Abs.Pattern }
-Pattern : PatternVar { Frontend.Signe.Abs.Pattern $1 }
-        | '(' ListPatternVar ')' { Frontend.Signe.Abs.Patterns $2 }
+Pattern : '(' ListPatternVar ')' { Frontend.Signe.Abs.Patterns $2 }
 
 PatternVar :: { Frontend.Signe.Abs.PatternVar }
 PatternVar : Id { Frontend.Signe.Abs.PVar $1 }

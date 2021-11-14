@@ -87,13 +87,12 @@ revertId (SAST.Id (Just pos) name) = Signe.Id (pos, name)
 revertId (SAST.Id Nothing name)    = Signe.Id ((-1,-1), name)
 
 convertPattern :: Signe.Pattern -> [SAST.Id]
-convertPattern (Signe.PVar id)  = pure $ convertId id
-convertPattern (Signe.PTup a b) = [convertId a, convertId b]
+convertPattern (Signe.Pattern (Signe.PVar v)) = pure $ convertId v
+convertPattern (Signe.Patterns xs) = map go xs
+    where go (Signe.PVar v) = convertId v
 
 revertPattern :: [SAST.Id] -> Signe.Pattern
-revertPattern [x]   = Signe.PVar $ revertId x
-revertPattern [x,y] = Signe.PTup (revertId x) (revertId y)
-revertPattern _ = error "You forgot to implement this in the parser. Akward..."
+revertPattern = Signe.Patterns . map (Signe.PVar . revertId)
 
 convertType :: Signe.Type -> SAST.Scheme
 convertType (Signe.TMono t)    = SAST.Forall [] $ convertMono t
@@ -106,12 +105,13 @@ revertType (SAST.Forall vs s) = Signe.TPoly (map revertId vs) (revertMono s)
 convertMono :: Signe.Mono -> SAST.Type
 convertMono (Signe.MVar v)     = SAST.TypeVar $ convertId v
 convertMono Signe.MQubit       = SAST.TypeQubit
+convertMono Signe.MUnit        = SAST.TypeUnit
 convertMono (Signe.MTens a b)  = convertMono a SAST.:* convertMono b
 convertMono (Signe.MArrow n p) = convertMono n SAST.:-> convertMono p
 
 revertMono :: SAST.Type -> Signe.Mono
 revertMono (SAST.TypeVar v) = Signe.MVar $ revertId v
 revertMono SAST.TypeQubit   = Signe.MQubit
-revertMono SAST.TypeUnit    = Signe.MVar $ Signe.Id ((-1,-1), "__UNIT__")
+revertMono SAST.TypeUnit    = Signe.MUnit
 revertMono (a SAST.:* b)    = Signe.MTens (revertMono a) (revertMono b)
 revertMono (a SAST.:-> b)   = Signe.MArrow (revertMono a) (revertMono b)

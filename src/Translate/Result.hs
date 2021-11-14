@@ -13,6 +13,7 @@ module Translate.Result
     , module Translate.Error
     , guard
     , equal
+    , equalM
     , throw
     , runResult
     , testResult
@@ -40,6 +41,13 @@ guard False e = throwError e
 
 equal :: Eq a => a -> a -> TranslationError -> Result a
 equal x y e = guard (x == y) e >> return x
+
+equalM :: Eq a => Result a -> Result a -> TranslationError -> Result a
+equalM x y e = do
+    x' <- x
+    y' <- y
+    guard (x' == y') e
+    return x'
 
 throw :: TranslationError -> Result notATotalProgram
 throw = throwError

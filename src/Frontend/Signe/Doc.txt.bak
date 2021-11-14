@@ -103,8 +103,7 @@ All other symbols are terminals.
   |  |  **|**  | //Complex2// //Complex1//
   |  |  **|**  | //Complex2//
   | //Complex// | -> | //Complex1//
-  | //Pattern// | -> | //PatternVar//
-  |  |  **|**  | ``(`` //[PatternVar]// ``)``
+  | //Pattern// | -> | ``(`` //[PatternVar]// ``)``
   | //PatternVar// | -> | //Id//
   | //[PatternVar]// | -> | **eps**
   |  |  **|**  | //PatternVar//

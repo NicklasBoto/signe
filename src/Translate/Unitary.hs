@@ -36,7 +36,7 @@ arity (Perm xs)  = return $ length xs
 arity (Cond t c) = do
     m <- arity t
     n <- arity c
-    guard (m == n) $ ConditionalArityMismatch (t,m) (c,n)
+    guard (m == n) $ ConditionalArityMismatch t c
     return m 
 arity (Rot _ _) = return 1
 

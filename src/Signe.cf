@@ -71,14 +71,20 @@ define cpis    = CPi ;
 
 token Scalar '-'? digit+ ('.' digit+ ('E' '-'? digit+)?)? ;
 
-PVar . Pattern ::= Id ;
-PTup . Pattern ::= "(" Id "," Id ")" ;
+Pattern  . Pattern    ::= PatternVar ;
+Patterns . Pattern    ::= "(" [PatternVar] ")" ;
+PVar     . PatternVar ::= Id ;
+separator PatternVar "," ;
 
 MVar   . Mono2 ::= Id ;
 MQubit . Mono2 ::= "qubit" ;
+MUnit  . Mono2 ::= "⊤" ;
+munits . Mono2 ::= "unit" ;
 MTens  . Mono1 ::= Mono2 "*" Mono1 ;
 MArrow . Mono1 ::= Mono2 "->" Mono1 ;
 coercions Mono 2 ;
+
+define munits = MUnit ;
 
 TMono  . Type ::= Mono ;
 TPoly  . Type ::= "∀" [Id] "." Mono ;

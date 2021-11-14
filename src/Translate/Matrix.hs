@@ -41,9 +41,9 @@ instance {-# OVERLAPS #-} Show Matrix where
 (<⊗>) = flip $ (<$>) . (⊗)
 
 matrix :: Unitary -> Result Matrix
-matrix (Par  xs) = foldl (⊗) (L.ident 1) <$> mapM matrix xs
-matrix (Ser  xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
-matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
+matrix (Par   xs) = foldl (⊗) (L.ident 1) <$> mapM matrix xs
+matrix (Ser   xs) = foldl (<>) (L.ident 2) <$> mapM matrix xs
+matrix (Perm  ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
 matrix (Rot  u v) = orthogonal u v  $> (2><2) (crotations u v)
 matrix (Cond t c) = on equalM arity t c (ConditionalArityMismatch t c)
                 >>= liftM2 (+) <$> (matrix t <⊗>) . proj1 <*> (matrix c <⊗>) . proj0

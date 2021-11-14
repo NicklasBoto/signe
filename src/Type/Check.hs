@@ -85,7 +85,7 @@ extend (Context c) = Context . go
               Map.insert x (Forall vs a) $ go (xs, Forall vs b)
           go _ = urk
 
-newtype Check a = Check (ExceptT TypeError (State Int) a)
+newtype Check a = Check { getCheck :: ExceptT TypeError (State Int) a }
     deriving (Functor, Applicative, Monad, MonadState Int, MonadError TypeError)
 
 checkProgram :: Program -> Either TypeError [(Id, Scheme)]
@@ -123,13 +123,10 @@ generateContext prog = Context . Map.fromList <$> mapM go prog
           go (Topl n _ (Just t) _) = return (n, t)
 
 runCheck :: Check (Subst, Type) -> Either TypeError Scheme
-runCheck (Check m) = case evalState (runExceptT m) 0 of
-    Left  e -> Left e
-    Right s -> Right $ closeOver s
+runCheck = second closeOver . flip evalState 0 . runExceptT . getCheck
 
 closeOver :: (Subst, Type) -> Scheme
-closeOver (sub, ty) = normalize sc
-  where sc = generalize emptyContext (apply sub ty)
+closeOver = normalize . generalize emptyContext . uncurry apply
 
 normalize :: Scheme -> Scheme
 normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)

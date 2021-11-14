@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 {-|
 Module      : FQC
 Description : Finite quantum computations
@@ -9,14 +11,20 @@ module Translate.FQC
     ( FQC(..)
     ) where
 
-import Translate.Unitary.Data
+import Translate.Unitary
 import Translate.FQC.Data
-import Control.Monad
+import Control.Monad (replicateM)
 import Translate.Matrix
 import Translate.Result
 
 test :: Unitary
 test = Par [ notU, unitary had ]
+
+valid :: FQC -> Result ()
+valid FQC{..} = do
+    guard (input + heap == output + garbage) Urk
+    a <- arity unitary
+    guard (a == input + heap) Urk
 
 φC :: Unitary
 φC = undefined

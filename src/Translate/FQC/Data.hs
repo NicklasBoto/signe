@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {-|
 Module      : FQC.Data
@@ -14,6 +15,15 @@ import Translate.Unitary.Data ( Unitary )
 data FQC = FQC
     { input, heap, output, garbage :: Int
     , unitary :: Unitary
+    }
+
+pattern SFQC :: Int -> Int -> Int -> Unitary -> FQC
+pattern SFQC i h o u = FQC
+    { input   = i
+    , heap    = h
+    , output  = o
+    , garbage = 0
+    , unitary = u
     }
 
 instance Show FQC where

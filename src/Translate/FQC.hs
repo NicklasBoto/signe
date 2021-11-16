@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {-|
 Module      : FQC
@@ -9,6 +10,7 @@ Exports the datatype for finite quantum computations as well as their predefined
 -}
 module Translate.FQC
     ( FQC(..)
+    , pattern SFQC
     ) where
 
 import Translate.Unitary

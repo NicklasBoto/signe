@@ -44,8 +44,12 @@ instance {-# OVERLAPS #-} Show Matrix where
 
 -- Do we already check for Ser arity errors in arity function?
 matrix :: Unitary -> Result Matrix
-matrix (Par  xs) = checkPar xs >> foldl (⊗) (L.ident 1) <$> mapM matrix xs
-matrix (Ser  xs) = checkSer xs >> foldl (<>) (L.ident 2) <$> mapM matrix xs
+matrix (Par  xs) = foldl (⊗) (L.ident 1) <$> mapM matrix xs
+matrix (Ser [])  = return $ (0><0) []
+matrix (Ser  xs@(x:_)) = checkSer xs
+                       >> foldl (<>)
+                        <$> (L.ident . (2^) <$> arity x) 
+                        <*> mapM matrix xs
 matrix (Perm ps) = checkPattern ps $> permutationMatrix (scalePermutation ps)
 matrix (Rot  u v) = orthogonal u v  $> (2><2) (crotations u v)
 matrix (Cond t c) = on equalM arity t c (ConditionalArityMismatch t c)

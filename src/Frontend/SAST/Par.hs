@@ -15,10 +15,13 @@ import Frontend.Signe.Par
     ( myLexer, pExpr, pProgram, pToplevel, pType )
 import Frontend.Signe.Lex ( Token )
 import Frontend.Signe.Layout ( resolveLayout )
-import Frontend.SAST.Abs ( Expr, Program, Scheme, Toplevel )
+import Frontend.SAST.Abs ( Expr, Program, Scheme, Toplevel, Id(..) )
 import Frontend.SAST.Convert
     ( convert, convertExpr, convertToplevel, convertType )
 import Data.String ( IsString(..) )
+
+instance IsString Id where
+    fromString = Id Nothing
 
 ofParser :: (t -> p) -> ([Token] -> Either String t) -> String -> p
 ofParser conv par s = case par (resolveLayout False (myLexer s)) of

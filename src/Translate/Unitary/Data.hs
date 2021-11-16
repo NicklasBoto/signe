@@ -73,16 +73,16 @@ data Unitary
     | Perm [Int]
     | Cond Unitary Unitary
     | Rot (C,C) (C,C)
-    deriving Eq
+    deriving (Show, Eq)
 
-instance Show Unitary where
-    show = render . showU
-
-showU :: Unitary -> Doc
-showU (Par   us) = sep $ punctuate "⊗" $ map showU us
-showU (Ser   us) = sep $ punctuate "⊙" $ map showU us
-showU (Perm  is) = braces $ sep $ map int is
-showU (Cond t c) = showU t <+> "if" <+> showU c
-showU (Rot (i,j) (k,l)) = "⎡" <> a <+> b <> "⎤"
-                $$ nest 3 "⎣" <> c <+> d <> "⎦"
-    where [a,b,c,d] = map (text . show) [i,j,k,l]
+-- instance Show Unitary where
+--     show = render . showU
+-- 
+-- showU :: Unitary -> Doc
+-- showU (Par   us) = sep $ punctuate "⊗" $ map showU us
+-- showU (Ser   us) = sep $ punctuate "⊙" $ map showU us
+-- showU (Perm  is) = braces $ sep $ map int is
+-- showU (Cond t c) = showU t <+> "if" <+> showU c
+-- showU (Rot (i,j) (k,l)) = "⎡" <> a <+> b <> "⎤"
+--                 $$ nest 3 "⎣" <> c <+> d <> "⎦"
+--     where [a,b,c,d] = map (text . show) [i,j,k,l]

@@ -33,7 +33,7 @@ import Control.Monad.Except
       unless,
       runExceptT,
       MonadError(throwError),
-      ExceptT(..) )
+      ExceptT(..), runExcept )
 import Control.Monad.State
     ( gets,
       modify,
@@ -65,6 +65,9 @@ debug = flip trace (return ())
 
 #endif
 
+tcp :: Program -> [(Id, Scheme, Context)]
+tcp prog = undefined
+
 newtype Context = Context (Map.Map Id Scheme)
     deriving (Eq, Show)
 
@@ -90,6 +93,24 @@ newtype Check a = Check { getCheck :: ExceptT TypeError (State Int) a }
 
 checkProgram :: Program -> Either TypeError [(Id, Scheme)]
 checkProgram = mapM <$> checkToplevel . generateContext <*> id
+
+-- checkToplevel :: Check Context -> Toplevel -> Either TypeError (Id, Scheme, Context)
+-- checkToplevel cc (Topl n as Nothing e) = (n,) <$> runCheck do
+--     c <- cc
+--     tvs <- generateFreshArgumentTypes as
+--     (s,t) <- infer (addArguments c as tvs) e
+--     (s,) . foldr (:->) t . apply s <$> mapM instantiate tvs
+-- checkToplevel cc (Topl n as (Just es) e) = (n,) <$> runCheck do
+--     c <- cc
+--     tvs <- generateFreshArgumentTypes as
+--     (s,t) <- infer (addArguments c as tvs) e
+--     at <- foldr (:->) t . apply s <$> mapM instantiate tvs
+--     et <- instantiate es
+--     let (≃) = (==) `on` closeOver . (s,)
+--     us <- unify at et
+--     if et ≃ apply us at
+--         then return (s, et, emptyContext)
+--         else throwError $ TypeMismatch et at
 
 checkToplevel :: Check Context -> Toplevel -> Either TypeError (Id, Scheme)
 checkToplevel cc (Topl n as Nothing e) = (n,) <$> runCheck do
@@ -124,6 +145,9 @@ generateContext prog = Context . Map.fromList <$> mapM go prog
 
 runCheck :: Check (Subst, Type) -> Either TypeError Scheme
 runCheck = second closeOver . flip evalState 0 . runExceptT . getCheck
+
+-- testCheck :: Check (Subst, Type) -> Either TypeError (Scheme, Subst)
+testCheck = flip evalState 0 . runExceptT . getCheck
 
 closeOver :: (Subst, Type) -> Scheme
 closeOver = normalize . generalize emptyContext . uncurry apply

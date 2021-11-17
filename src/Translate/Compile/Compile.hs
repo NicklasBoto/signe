@@ -1,7 +1,9 @@
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE TupleSections  #-}
-{-# LANGUAGE RankNTypes     #-}
-{-# LANGUAGE LambdaCase     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE KindSignatures    #-}
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE LambdaCase        #-}
 
 module Translate.Compile.Compile where
 
@@ -17,6 +19,7 @@ import Data.Bifunctor
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Data.List
+import Data.List.Split
 import Control.Monad hiding ( guard )
 import Data.Function
 import Translate.Matrix hiding (orthogonal)
@@ -37,6 +40,9 @@ idFQC = FQC
     , garbage = 0
     , unitary = Perm [0]
     }
+
+testCompile :: String -> Result Unitary
+testCompile = fmap (removeEmpties . unitary) . compile . parseExpr
 
 compile :: Expr -> Result FQC
 compile = \case
@@ -87,7 +93,93 @@ compile = \case
         , unitary = Perm []
         }
 
+    Tup [t,u] -> do
+        let ut = uses t
+            uu = uses u
+            ψ  = Set.toList $ Set.union ut uu
+            γδ = on (<>) Set.toList ut uu
+            φC = contraction ψ γδ
+
+        FQC it ht ot gt φt <- compile t
+        FQC iu hu ou gu φu <- compile u
+
+        let bandW = length γδ + ht + hu
+            perml = contextPerm bandW hu iu it
+            permr = contextPerm bandW gu ou ot
+
+        return FQC
+            { input   = input φC
+            , heap    = heap φC + ht + hu
+            , output  = ot + ou
+            , garbage = gt + gu
+            , unitary = Ser
+                [ Par [unitary φC, Perm [0..ht+hu-1]]
+                , perml
+                , Par [φt, φu]
+                , permr
+                ]
+            }
+
+    Tup (x:xs) -> compile $ Tup [x, Tup xs]
+
+    Let i u -> do
+        let ([x],t) = Map.elemAt 0 i
+            ut = uses t
+            uu = Set.delete x $ uses u
+            ψ  = Set.toList $ Set.union ut uu
+            γδ = on (<>) Set.toList ut uu
+            φC = contraction ψ γδ
+
+
+        FQC it ht ot gt φt <- compile t
+        FQC iu hu ou gu φu <- compile u
+
+        let bandW = length γδ + ht + hu
+            perml = undefined --contextPerm' bandW hu 0 (output φC)
+            permc = undefined --contextPerm' bandW it iu
+            permr = undefined
+            w = if x `Set.notMember` uses u
+                    then weakening
+                    else undefined
+
+        return FQC
+            { input = input φC
+            , heap = heap φC + ht + hu
+            , output = ot + ou
+            , garbage = gt + gu
+            , unitary = Ser
+                [ Par [unitary φC, Perm [0..ht+hu-1]]
+                , perml
+                , Par [Perm [undefined], φt, Perm [undefined]]
+                , permc
+                , Par [Perm [undefined], φu, Perm [undefined]]
+                , permr
+                ]
+            }
+
+
+
     _ -> throw Urk
+
+removeEmpties :: Unitary -> Unitary
+removeEmpties (Par us) = Par $ filter nonEmpty $ map removeEmpties us
+removeEmpties (Ser us) = Ser $ filter nonEmpty $ map removeEmpties us
+removeEmpties a        = a
+
+nonEmpty :: Unitary -> Bool
+nonEmpty (Perm []) = False
+nonEmpty (Par [])  = False
+nonEmpty (Ser [])  = False
+nonEmpty _         = True
+
+contextPerm :: Int -> Int -> Int -> Int -> Unitary
+contextPerm size a b c = Perm perm
+    where band = [0..size-1]
+          (γ,(δ,(ηt,ηu))) = second (second (splitAt a) . splitAt b) (splitAt c band)
+          perm = γ <> ηt <> δ <> ηu
+
+f :: [Int] -> [Int] -> [Int]
+f p c = concatMap (splitPlaces c [0..length c - 1] !!) $ map (-1) p
 
 normalize :: C -> C -> (C, C)
 normalize a b = (a / norm a b, b / norm a b)
@@ -186,11 +278,11 @@ occurances :: [Id] -> [[Int]]
 occurances = nub . filter ((>1) . length) . (map =<< flip elemIndices)
 
 swapW :: [Id] -> [Id] -> Unitary
-swapW g = Perm 
+swapW g = Perm
         . map fst
-        . uncurry (<>) 
+        . uncurry (<>)
         . swap
-        . partition (flip elem g . snd) 
+        . partition (flip elem g . snd)
         . zip [0..]
 
 uses :: Expr -> Context

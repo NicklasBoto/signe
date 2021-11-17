@@ -12,6 +12,7 @@ import Frontend.SAST.Par
 import Frontend.SAST.Print
 import Translate.Result
 import Data.Complex
+import Data.Tuple (swap)
 import Data.Bifunctor
 import qualified Data.Set as Set
 import qualified Data.Map as Map
@@ -20,7 +21,7 @@ import Control.Monad hiding ( guard )
 import Data.Function
 import Translate.Matrix hiding (orthogonal)
 import Control.Lens hiding ( uses, Context )
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, mapMaybe)
 import Debug.Trace
 
 type Context = Set.Set Id
@@ -121,33 +122,16 @@ cx = FQC
     , unitary = Cond (Rot (0,1) (1,0)) (Perm [0])
     }
 
-tm = testResult . matrix . unitary
-
 splitContext :: Context -> Expr -> Expr -> (Context, Context, FQC)
 splitContext c e1 e2 = (ue1, ue2, fqc)
     where ue1 = uses e1
           ue2 = uses e2
           both = Set.intersection ue1 ue2
           shareN = Set.size both
-          fqc = if Set.null both
-                    then FQC
-                        { input   = 0
-                        , heap    = 0
-                        , output  = 0
-                        , garbage = 0
-                        , unitary = Perm []
-                        }
-                    else FQC
-                        { input   = shareN
-                        , heap    = shareN
-                        , output  = 2 * shareN
-                        , garbage = 0
-                        , unitary = Par [Cond (Rot (0,1) (1,0)) (Perm [0])]
-                        }
+          fqc = undefined
 
--- TODO: Garbage swapping
-dup :: [Id] -> [Id] -> FQC
-dup i o = FQC 
+contraction :: [Id] -> [Id] -> FQC
+contraction i o = FQC
     { input   = input
     , heap    = heap
     , output  = output
@@ -157,6 +141,20 @@ dup i o = FQC
             heap    = output - input
             output  = length o
             unitary = Ser $ iN output : map (shares (length o)) (occurances o)
+
+weakening :: Context -> Context -> FQC
+weakening i o = FQC
+    { input   = input
+    , heap    = 0
+    , output  = output
+    , garbage = garbage
+    , unitary = unitary
+    } where input   = length i
+            heap    = output - input
+            output  = length o
+            garbage = length diff
+            diff    = Set.toList $ i Set.\\ o
+            unitary = swapW diff (Set.toList i)
 
 shares :: Int -> [Int] -> Unitary
 shares size ~(i:is) = Ser $ map circ is
@@ -172,16 +170,13 @@ iN :: Int -> Unitary
 iN x = Perm [0..x-1]
 
 pX :: Unitary
-pX = Rot (0,1) (1,0) 
+pX = Rot (0,1) (1,0)
 
 cnot :: Unitary
 cnot = Cond pX (iN 1)
 
 swapUp :: Int -> Int -> Int -> Unitary
-swapUp size x y = Perm $ swapIx size x y 
-
-swap1 :: Unitary
-swap1 = swapUp 3 2 1
+swapUp size x y = Perm $ swapIx size x y
 
 swapIx :: Int -> Int -> Int -> [Int]
 swapIx size x y = (element x .~ (l !! y)) $ (element y .~ (l !! x)) l
@@ -190,28 +185,14 @@ swapIx size x y = (element x .~ (l !! y)) $ (element y .~ (l !! x)) l
 occurances :: [Id] -> [[Int]]
 occurances = nub . filter ((>1) . length) . (map =<< flip elemIndices)
 
--- x y |0>
--- x x G
---                                       length ouput - 1
--- Cond (Par [Id, Rot (0,1) (1,0), Id]) (Perm [0,1])
---           var sätta in Id?            generera permutationslista
+swapW :: [Id] -> [Id] -> Unitary
+swapW g = Perm 
+        . map fst
+        . uncurry (<>) 
+        . swap
+        . partition (flip elem g . snd) 
+        . zip [0..]
 
--- FQC
---     { input   = length input
---     , heap    = heap
---     , output  = length output
---     , garbage = garbage
---     , unitary = Perm [0]
---     }
-
-    -- (variabel som går från input till output, hur många gånger den ska shareas - 1)
--- input == output then FQC
---                         { input   = length input
---                         , heap    = 0
---                         , output  = length output
---                         , garbage = 0
---                         , unitary = Perm [0]
---                         }
 uses :: Expr -> Context
 uses (Var i)        = Set.singleton i
 uses KetZero        = Set.empty

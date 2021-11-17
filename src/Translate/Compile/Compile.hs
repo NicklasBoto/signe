@@ -104,8 +104,8 @@ compile = \case
         FQC iu hu ou gu φu <- compile u
 
         let bandW = length γδ + ht + hu
-            perml = contextPerm bandW hu iu it
-            permr = contextPerm bandW gu ou ot
+            perml = batchPermutation [it,iu,ht,hu] [0,2,1,3]
+            permr = batchPermutation [ot,gt,ou,gu] [0,2,1,3]
 
         return FQC
             { input   = input φC
@@ -114,9 +114,9 @@ compile = \case
             , garbage = gt + gu
             , unitary = Ser
                 [ Par [unitary φC, Perm [0..ht+hu-1]]
-                , perml
+                , Perm perml
                 , Par [φt, φu]
-                , permr
+                , Perm permr
                 ]
             }
 
@@ -129,7 +129,6 @@ compile = \case
             ψ  = Set.toList $ Set.union ut uu
             γδ = on (<>) Set.toList ut uu
             φC = contraction ψ γδ
-
 
         FQC it ht ot gt φt <- compile t
         FQC iu hu ou gu φu <- compile u
@@ -178,8 +177,8 @@ contextPerm size a b c = Perm perm
           (γ,(δ,(ηt,ηu))) = second (second (splitAt a) . splitAt b) (splitAt c band)
           perm = γ <> ηt <> δ <> ηu
 
-f :: [Int] -> [Int] -> [Int]
-f p c = concatMap (splitPlaces c [0..length c - 1] !!) $ map (-1) p
+batchPermutation :: [Int] -> [Int] -> [Int]
+batchPermutation c = concatMap (splitPlaces c [0..sum c] !!)
 
 normalize :: C -> C -> (C, C)
 normalize a b = (a / norm a b, b / norm a b)

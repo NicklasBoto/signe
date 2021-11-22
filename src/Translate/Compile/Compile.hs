@@ -1,7 +1,9 @@
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE TupleSections  #-}
-{-# LANGUAGE RankNTypes     #-}
-{-# LANGUAGE LambdaCase     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE KindSignatures    #-}
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE LambdaCase        #-}
 
 module Translate.Compile.Compile where
 
@@ -12,15 +14,17 @@ import Frontend.SAST.Par
 import Frontend.SAST.Print
 import Translate.Result
 import Data.Complex
+import Data.Tuple (swap)
 import Data.Bifunctor
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Data.List
+import Data.List.Split
 import Control.Monad hiding ( guard )
 import Data.Function
 import Translate.Matrix hiding (orthogonal)
 import Control.Lens hiding ( uses, Context )
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, mapMaybe)
 import Debug.Trace
 
 type Context = Set.Set Id
@@ -36,6 +40,9 @@ idFQC = FQC
     , garbage = 0
     , unitary = Perm [0]
     }
+
+testCompile :: String -> Result Unitary
+testCompile = fmap (removeEmpties . unitary) . compile . parseExpr
 
 compile :: Expr -> Result FQC
 compile = \case
@@ -86,7 +93,92 @@ compile = \case
         , unitary = Perm []
         }
 
+    Tup [t,u] -> do
+        let ut = uses t
+            uu = uses u
+            ψ  = Set.toList $ Set.union ut uu
+            γδ = on (<>) Set.toList ut uu
+            φC = contraction ψ γδ
+
+        FQC it ht ot gt φt <- compile t
+        FQC iu hu ou gu φu <- compile u
+
+        let bandW = length γδ + ht + hu
+            perml = batchPermutation [it,iu,ht,hu] [0,2,1,3]
+            permr = batchPermutation [ot,gt,ou,gu] [0,2,1,3]
+
+        return FQC
+            { input   = input φC
+            , heap    = heap φC + ht + hu
+            , output  = ot + ou
+            , garbage = gt + gu
+            , unitary = Ser
+                [ Par [unitary φC, Perm [0..ht+hu-1]]
+                , Perm perml
+                , Par [φt, φu]
+                , Perm permr
+                ]
+            }
+
+    Tup (x:xs) -> compile $ Tup [x, Tup xs]
+
+    Let i u -> do
+        let ([x],t) = Map.elemAt 0 i
+            ut = uses t
+            uu = Set.delete x $ uses u
+            ψ  = Set.toList $ Set.union ut uu
+            γδ = on (<>) Set.toList ut uu
+            φC = contraction ψ γδ
+
+        FQC it ht ot gt φt <- compile t
+        FQC iu hu ou gu φu <- compile u
+
+        let bandW = length γδ + ht + hu
+            perml = undefined --contextPerm' bandW hu 0 (output φC)
+            permc = undefined --contextPerm' bandW it iu
+            permr = undefined
+            w = if x `Set.notMember` uses u
+                    then weakening
+                    else undefined
+
+        return FQC
+            { input = input φC
+            , heap = heap φC + ht + hu
+            , output = ot + ou
+            , garbage = gt + gu
+            , unitary = Ser
+                [ Par [unitary φC, Perm [0..ht+hu-1]]
+                , perml
+                , Par [Perm [undefined], φt, Perm [undefined]]
+                , permc
+                , Par [Perm [undefined], φu, Perm [undefined]]
+                , permr
+                ]
+            }
+
+
+
     _ -> throw Urk
+
+removeEmpties :: Unitary -> Unitary
+removeEmpties (Par us) = Par $ filter nonEmpty $ map removeEmpties us
+removeEmpties (Ser us) = Ser $ filter nonEmpty $ map removeEmpties us
+removeEmpties a        = a
+
+nonEmpty :: Unitary -> Bool
+nonEmpty (Perm []) = False
+nonEmpty (Par [])  = False
+nonEmpty (Ser [])  = False
+nonEmpty _         = True
+
+contextPerm :: Int -> Int -> Int -> Int -> Unitary
+contextPerm size a b c = Perm perm
+    where band = [0..size-1]
+          (γ,(δ,(ηt,ηu))) = second (second (splitAt a) . splitAt b) (splitAt c band)
+          perm = γ <> ηt <> δ <> ηu
+
+batchPermutation :: [Int] -> [Int] -> [Int]
+batchPermutation c = concatMap (splitPlaces c [0..sum c] !!)
 
 normalize :: C -> C -> (C, C)
 normalize a b = (a / norm a b, b / norm a b)
@@ -121,33 +213,16 @@ cx = FQC
     , unitary = Cond (Rot (0,1) (1,0)) (Perm [0])
     }
 
-tm = testResult . matrix . unitary
-
 splitContext :: Context -> Expr -> Expr -> (Context, Context, FQC)
 splitContext c e1 e2 = (ue1, ue2, fqc)
     where ue1 = uses e1
           ue2 = uses e2
           both = Set.intersection ue1 ue2
           shareN = Set.size both
-          fqc = if Set.null both
-                    then FQC
-                        { input   = 0
-                        , heap    = 0
-                        , output  = 0
-                        , garbage = 0
-                        , unitary = Perm []
-                        }
-                    else FQC
-                        { input   = shareN
-                        , heap    = shareN
-                        , output  = 2 * shareN
-                        , garbage = 0
-                        , unitary = Par [Cond (Rot (0,1) (1,0)) (Perm [0])]
-                        }
+          fqc = undefined
 
--- TODO: Garbage swapping
-dup :: [Id] -> [Id] -> FQC
-dup i o = FQC 
+contraction :: [Id] -> [Id] -> FQC
+contraction i o = FQC
     { input   = input
     , heap    = heap
     , output  = output
@@ -157,6 +232,20 @@ dup i o = FQC
             heap    = output - input
             output  = length o
             unitary = Ser $ iN output : map (shares (length o)) (occurances o)
+
+weakening :: Context -> Context -> FQC
+weakening i o = FQC
+    { input   = input
+    , heap    = 0
+    , output  = output
+    , garbage = garbage
+    , unitary = unitary
+    } where input   = length i
+            heap    = output - input
+            output  = length o
+            garbage = length diff
+            diff    = Set.toList $ i Set.\\ o
+            unitary = swapW diff (Set.toList i)
 
 shares :: Int -> [Int] -> Unitary
 shares size ~(i:is) = Ser $ map circ is
@@ -172,16 +261,13 @@ iN :: Int -> Unitary
 iN x = Perm [0..x-1]
 
 pX :: Unitary
-pX = Rot (0,1) (1,0) 
+pX = Rot (0,1) (1,0)
 
 cnot :: Unitary
 cnot = Cond pX (iN 1)
 
 swapUp :: Int -> Int -> Int -> Unitary
-swapUp size x y = Perm $ swapIx size x y 
-
-swap1 :: Unitary
-swap1 = swapUp 3 2 1
+swapUp size x y = Perm $ swapIx size x y
 
 swapIx :: Int -> Int -> Int -> [Int]
 swapIx size x y = (element x .~ (l !! y)) $ (element y .~ (l !! x)) l
@@ -190,28 +276,14 @@ swapIx size x y = (element x .~ (l !! y)) $ (element y .~ (l !! x)) l
 occurances :: [Id] -> [[Int]]
 occurances = nub . filter ((>1) . length) . (map =<< flip elemIndices)
 
--- x y |0>
--- x x G
---                                       length ouput - 1
--- Cond (Par [Id, Rot (0,1) (1,0), Id]) (Perm [0,1])
---           var sätta in Id?            generera permutationslista
+swapW :: [Id] -> [Id] -> Unitary
+swapW g = Perm
+        . map fst
+        . uncurry (<>)
+        . swap
+        . partition (flip elem g . snd)
+        . zip [0..]
 
--- FQC
---     { input   = length input
---     , heap    = heap
---     , output  = length output
---     , garbage = garbage
---     , unitary = Perm [0]
---     }
-
-    -- (variabel som går från input till output, hur många gånger den ska shareas - 1)
--- input == output then FQC
---                         { input   = length input
---                         , heap    = 0
---                         , output  = length output
---                         , garbage = 0
---                         , unitary = Perm [0]
---                         }
 uses :: Expr -> Context
 uses (Var i)        = Set.singleton i
 uses KetZero        = Set.empty

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE TupleSections     #-}
@@ -24,13 +25,20 @@ import Control.Monad hiding ( guard )
 import Data.Function
 import Translate.Matrix hiding (orthogonal)
 import Control.Lens hiding ( uses, Context )
-import Data.Maybe (catMaybes, mapMaybe)
+import Data.Maybe (catMaybes, mapMaybe, fromJust)
 import Debug.Trace
 
 type Context = Set.Set Id
+type Env = Map.Map Id Int
+
+emptyEnv :: Env
+emptyEnv = Map.empty
 
 test :: Program
 test = parse "main : qubit * qubit := (~0, ~0)"
+
+showSer :: Unitary -> IO ()
+showSer ~(Ser xs) = putStrLn $ intercalate "\n" $ map show xs 
 
 idFQC :: FQC
 idFQC = FQC
@@ -41,11 +49,33 @@ idFQC = FQC
     , unitary = Perm [0]
     }
 
-testCompile :: String -> Result Unitary
-testCompile = fmap (removeEmpties . unitary) . compile . parseExpr
+testCompile :: String -> Unitary
+testCompile = testResult . fmap (removeEmpties . unitary) . compile emptyEnv . parseExpr
 
-compile :: Expr -> Result FQC
-compile = \case
+showCompile :: String -> IO ()
+showCompile = showSer . testCompile
+
+compile :: Env -> Expr -> Result FQC
+compile env = \case
+    Var x -> do
+        size_x <- maybe (throw Urk) return $ Map.lookup x env
+        let env' = Map.delete x env
+        if Map.null env'
+            then return FQC
+                { input   = size_x
+                , heap    = 0
+                , output  = size_x
+                , garbage = 0
+                , unitary = iN size_x
+                }
+            else return FQC
+                { input   = length env' + size_x
+                , heap    = 0
+                , output  = size_x
+                , garbage = length env'
+                , unitary = Perm $ batchPermutation [length env', size_x] [1,0]
+                }
+
     KetZero -> return FQC
         { input   = 0
         , heap    = 1
@@ -99,12 +129,13 @@ compile = \case
             ψ  = Set.toList $ Set.union ut uu
             γδ = on (<>) Set.toList ut uu
             φC = contraction ψ γδ
+            is    = map (fromJust . flip Map.lookup env) γδ
+            (γ,δ) = splitAt (length ut) (zip γδ is)
+        
+        FQC it ht ot gt φt <- compile (Map.fromList γ) t
+        FQC iu hu ou gu φu <- compile (Map.fromList δ) u
 
-        FQC it ht ot gt φt <- compile t
-        FQC iu hu ou gu φu <- compile u
-
-        let bandW = length γδ + ht + hu
-            perml = batchPermutation [it,iu,ht,hu] [0,2,1,3]
+        let perml = batchPermutation [it,iu,ht,hu] [0,2,1,3]
             permr = batchPermutation [ot,gt,ou,gu] [0,2,1,3]
 
         return FQC
@@ -113,52 +144,60 @@ compile = \case
             , output  = ot + ou
             , garbage = gt + gu
             , unitary = Ser
-                [ Par [unitary φC, Perm [0..ht+hu-1]]
+                [ Par [unitary φC, iN (ht+hu)]
                 , Perm perml
                 , Par [φt, φu]
                 , Perm permr
                 ]
             }
 
-    Tup (x:xs) -> compile $ Tup [x, Tup xs]
+    Tup (x:xs) -> compile env $ Tup [x, Tup xs]
 
     Let i u -> do
-        let ([x],t) = Map.elemAt 0 i
+        let (xs,t) = Map.elemAt 0 i
+            is = Set.fromList xs
             ut = uses t
-            uu = Set.delete x $ uses u
+            uu = uses u `Set.difference` is
             ψ  = Set.toList $ Set.union ut uu
             γδ = on (<>) Set.toList ut uu
             φC = contraction ψ γδ
+            ix    = map (fromJust . flip Map.lookup env) γδ
+            (γ,δ) = splitAt (length ut) (zip γδ ix)
 
-        FQC it ht ot gt φt <- compile t
-        FQC iu hu ou gu φu <- compile u
+        ft' <- compile (Map.fromList γ) t
 
-        let bandW = length γδ + ht + hu
-            perml = undefined --contextPerm' bandW hu 0 (output φC)
-            permc = undefined --contextPerm' bandW it iu
-            permr = undefined
-            w = if x `Set.notMember` uses u
-                    then weakening
-                    else undefined
+        let diff = is `Set.intersection` uses u
+            w    = weakening is diff
+
+        ft@(FQC it ht ot gt φt) <- w `comp` ft'
+
+        let sized_is = Map.fromSet (const 1) (is `Set.intersection` uses u)
+            nis      = length sized_is
+        FQC iu hu ou gu φu <- compile (sized_is `Map.union` Map.fromList δ) u
+
+        let perml = batchPermutation [it,iu-nis,ht,hu] [1,0,2,3]
+            permc = batchPermutation [iu-nis,ot,gt,hu] [0,1,3,2]
+            permr = batchPermutation [ou,gu,gt] [0,2,1]
 
         return FQC
-            { input = input φC
-            , heap = heap φC + ht + hu
-            , output = ot + ou
+            { input   = input φC
+            , heap    = heap φC + ht + hu
+            , output  = ou
             , garbage = gt + gu
             , unitary = Ser
-                [ Par [unitary φC, Perm [0..ht+hu-1]]
-                , perml
-                , Par [Perm [undefined], φt, Perm [undefined]]
-                , permc
-                , Par [Perm [undefined], φu, Perm [undefined]]
-                , permr
+                [ Par [unitary φC, iN (ht+hu)]
+                , Perm perml
+                , Par [iN (iu-nis), φt, iN hu]
+                , Perm permc
+                , Par [φu, iN gt]
+                , Perm permr
                 ]
             }
 
+    Ifq b t f -> do
+        return idFQC
 
-
-    _ -> throw Urk
+    x -> throw Urk
 
 removeEmpties :: Unitary -> Unitary
 removeEmpties (Par us) = Par $ filter nonEmpty $ map removeEmpties us

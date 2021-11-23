@@ -56,6 +56,11 @@ idFQC = FQC
 testCompile :: String -> Unitary
 testCompile = testResult . fmap (removeEmpties . unitary) . compile emptyEnv . parseExpr
 
+compileExpr :: String -> IO ()
+compileExpr e = print (FQC i h g o φ') >> putStrLn "" >> print (testResult $ matrix φ')
+    where FQC i h g o φ = testResult . compile emptyEnv $ parseExpr e
+          φ' = removeEmpties φ
+
 showCompile :: String -> IO ()
 showCompile = showSer . testCompile
 
@@ -95,6 +100,40 @@ compile env = \case
         , garbage = 0
         , unitary = Rot (0,1) (1,0)
         }
+
+    Abs xs e -> compile (Map.fromList (zip xs (repeat 1)) `Map.union` env) e
+
+    App f x -> do
+        let uf = uses f 
+            ux = uses x
+            ψ  = Set.toList $ Set.union uf ux
+            γδ = on (<>) Set.toList uf ux
+            φC = contraction ψ γδ
+            is    = map (fromJust . flip Map.lookup env) γδ
+            (γ,δ) = splitAt (length uf) (zip γδ is)
+
+        FQC iF hf oF gf φf <- compile (Map.fromList γ) f
+        FQC ix hx ox gx φx <- compile (Map.fromList δ) x
+        
+        
+        let perml = batchPermutation [ix,iF-ox,hx,hf] [1,0,2,3]
+            permc = batchPermutation [iF-ox,ox,gx,hf] [0,1,3,2]
+            permr = batchPermutation [oF,gf,gx]       [0,2,1]
+
+        return FQC 
+            { input   = input φC
+            , heap    = heap φC + hf + hx
+            , output  = oF
+            , garbage = gx + gf
+            , unitary = Ser 
+                [ Par [unitary φC, iN (hx+hf)]
+                , Perm perml
+                , Par [iN (iF-ox), φx, iN hf]
+                , Perm permc
+                , Par [φf, iN gx]
+                , Perm permr    
+                ]
+            }
 
     Mul k q -> return FQC
         { input   = 0
@@ -453,6 +492,7 @@ shares size ~(i:is) = Ser $ map circ is
 
 iN :: Int -> Unitary
 iN x = Perm [0..x-1]
+
 
 pX :: Unitary
 pX = Rot (0,1) (1,0)

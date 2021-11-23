@@ -225,8 +225,10 @@ compile env = \case
             }
 
     Ifq c t u -> do
+        (d,l,lc,r,rc,ψ) <- orthogonal env t u
+
         let uc    = uses c
-            ub    = uses t `Set.union` uses u
+            ub    = lc `Set.union` rc
             vars  = Set.toList $ Set.union uc ub
             γδ    = on (<>) Set.toList uc ub
             φC    = contraction vars γδ
@@ -234,15 +236,13 @@ compile env = \case
             (γ,δ) = splitAt (length uc) (zip γδ ixs)
 
         FQC ic hc oc gc φc <- compile (Map.fromList γ) c
-        FQC it ht ot gt φt <- compile (Map.fromList δ) t
-        FQC iu hu ou gu φu <- compile (Map.fromList δ) u
 
         let FQC ib hb ob gb φb = FQC
                 { input   = 1 + length ub
-                , heap    = max ht hu
-                , output  = 1 + ot
+                , heap    = max (heap l) (heap r)
+                , output  = 1 + output l
                 , garbage = 0
-                , unitary = Cond φt φu
+                , unitary = Cond (unitary l) (unitary r)
                 }
 
         let perml = batchPermutation [ic,ib-1,hc,hb] [1,0,2,3]
@@ -252,15 +252,16 @@ compile env = \case
         return FQC
             { input   = input φC
             , heap    = heap φC + hc + hb
-            , output  = ob - 1
-            , garbage = gc + 1
+            , output  = output ψ
+            , garbage = 0
             , unitary = Ser
                 [ Par [unitary φC, iN (hc+hb)]
                 , Perm perml
                 , Par [iN (ib-1), φc, iN hb]
                 , Perm permc
-                , Par [φb, iN gc]
+                , φb
                 , Perm permr
+                , unitary ψ
                 ]
             }
 
@@ -269,13 +270,15 @@ compile env = \case
 removeEmpties :: Unitary -> Unitary
 removeEmpties (Par us) = Par $ filter nonEmpty $ map removeEmpties us
 removeEmpties (Ser us) = Ser $ filter nonEmpty $ map removeEmpties us
+removeEmpties (Cond t f) = Cond (removeEmpties t) (removeEmpties f)
 removeEmpties a        = a
 
 nonEmpty :: Unitary -> Bool
-nonEmpty (Perm []) = False
-nonEmpty (Par [])  = False
-nonEmpty (Ser [])  = False
-nonEmpty _         = True
+nonEmpty (Perm [])  = False
+nonEmpty (Par [])   = False
+nonEmpty (Ser [])   = False
+nonEmpty (Cond t f) = nonEmpty t || nonEmpty f
+nonEmpty _          = True
 
 contextPerm :: Int -> Int -> Int -> Int -> Unitary
 contextPerm size a b c = Perm perm
@@ -300,7 +303,7 @@ nullFQC = FQC
     }
 
 orthogonal :: Env -> Expr -> Expr -> Result (Int, FQC, Context, FQC, Context, FQC)
-orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
     where ψ = FQC
             { input   = 1
             , heap    = 0
@@ -309,7 +312,7 @@ orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, empty
             , unitary = Perm [0]
             }
 
-orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
     where ψ = FQC
             { input   = 1
             , heap    = 0
@@ -378,7 +381,7 @@ orthogonal env (Tup [t,v]) (Tup [u,w]) = do
 
     return (c', l', lc `Set.union` uses v, r', rc `Set.union` uses w, ψ')
 
-orthogonal env _ _ = undefined
+orthogonal _ t f = throw $ BranchesNotOrthonogal t f
 
 amplitude :: Expr -> Result (C, Expr)
 amplitude KetZero   = return (1, KetZero)

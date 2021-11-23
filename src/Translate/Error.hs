@@ -13,6 +13,8 @@ module Translate.Error
     ) where
 
 import Translate.Unitary.Data ( Unitary )
+import Frontend.SAST.Abs ( Expr )
+import Frontend.SAST.Print ()
 
 -- | The set of errors that can occur during circuit translation and compilation
 data TranslationError
@@ -28,6 +30,8 @@ data TranslationError
     | MalformedPermutationPattern [Int]
     -- | A rotation operation is not unitary
     | RotationNotOrthogonal Unitary
+    -- | Branches of a strict conditional are not orthogonal
+    | BranchesNotOrthonogal Expr Expr
     
 
 
@@ -42,3 +46,4 @@ instance Show TranslationError where
     show (ParallelArityMismatch xs)       = "ParallelArityMismatch: Arities do not match" ++ concatMap ((++) "\n" . show) xs
     show (MalformedPermutationPattern ns) = "MalformedPermutationPattern: Pattern is not a permutation of [0..n-1]\n" ++ show ns
     show (RotationNotOrthogonal u)        = "RotationNotOrthogonal: Rotation is not orthogonal" ++ show u
+    show (BranchesNotOrthonogal t f)      = "BranchesNotOrthogonal: Branches of strict conditional are not orthogonal\n" ++ show (t,f)

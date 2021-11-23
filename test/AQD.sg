@@ -1,0 +1,50 @@
+I x : ∀ a . a -> a
+ := x
+
+B f g : ∀ a b c . (c -> b) -> (a -> c) -> a -> b
+ := f @ g
+
+K x y : ∀ a b . a -> b -> a
+ := x
+
+F f x y : ∀ a b c . (b -> a -> c) -> a -> b -> c
+ := f y x
+
+W f x : ∀ a b . (a -> a -> b) -> a -> b
+ := f x x
+
+S x y : qubit -> qubit -> qubit
+ := x + y
+
+P1 x : qubit -> qubit
+ := -1 * x
+
+Pi x : qubit -> qubit
+ := i * x
+
+Pe x : qubit -> qubit
+ := e^((iπ)/2) * x
+
+X f t q : ∀ a . a -> a -> qubit -> a
+ := if° q
+      then t
+      else f
+
+t x y : ∀ a b . a -> b -> a * b
+ := (x,y)
+
+p f (x,y) : ∀ a b c . (a -> b -> c) -> (a * b) -> c
+ := f x y
+
+u : qubit
+ := ~1
+
+d : qubit
+ := ~0
+
+epr := W t (S d u)
+meas := W K
+coinflip := W K (S d u)
+pauliX := X u d 
+hadamard := X (S d u) (S d (P1 u))
+share := W t

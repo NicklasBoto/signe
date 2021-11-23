@@ -17,10 +17,10 @@ qminus . Expr3 ::= "~-" ;
 qimagi . Expr3 ::= "~i" ;
 qimagj . Expr3 ::= "~j" ;
 ETup   . Expr3 ::= "(" [Expr] ")" ;
-EMul   . Expr3 ::=  Complex "*" Expr3 ;
 EApp   . Expr2 ::= Expr2 Expr3 ;
-EPlus  . Expr1 ::= Expr2 "+" Expr1 ;
-emin   . Expr1 ::= Expr2 "-" Expr1 ;
+ESup   . Expr1 ::= Complex "*" Expr2 SupOp Complex "*" Expr1 ;
+sunit  . Expr1 ::= Expr2 SupOp Expr1 ;
+EMul   . Expr1 ::= Complex "*" Expr2 ;
 edolr  . Expr1 ::= Expr2 "$" Expr1 ;
 EComp  . Expr1 ::= Expr2 "∘" Expr1 ;
 ecomps . Expr1 ::= Expr2 "@" Expr1 ;
@@ -33,21 +33,24 @@ eabss  . Expr1 ::= "\\" [Id] "." Expr ;
 coercions Expr 3 ;
 separator Expr "," ;
 
-define qplus       = EPlus EFalse ETrue ;
-define qminus      = emin EFalse ETrue ;
-define qimagi      = EMul cjmag ETrue ;
-define qimagj      = EMul cnmag EFalse ;
-define emin x y    = EPlus x (EMul (creal (Scalar "-1")) y) ;
-define edolr a b   = EApp a b ;
-define ecomps a b  = EComp a b ;
-define eifqs c t f = EIfq c t f ;
-define eabss x m   = EAbs x m ;
+define qplus        = sunit EFalse SOPlus ETrue ;
+define qminus       = sunit EFalse SOMin ETrue ;
+define qimagi       = EMul cjmag ETrue ;
+define qimagj       = EMul cnmag EFalse ;
+define edolr a b    = EApp a b ;
+define ecomps a b   = EComp a b ;
+define eifqs c t f  = EIfq c t f ;
+define eabss x m    = EAbs x m ;
+define sunit e1 op e2  = ESup (creal (Scalar "1")) e1 op (creal (Scalar "1")) e2 ;
 
 layout "let" ;
 layout stop "in" ;
 
 LLet . Let ::= Pattern "=" Expr ;
 separator nonempty Let ";" ;
+
+SOPlus . SupOp ::= "+" ;
+SOMin  . SupOp ::= "-" ;
 
 CComp . Complex2 ::= Scalar "+" Scalar "i" ;
 CComn . Complex2 ::= Scalar "-" Scalar "i" ;

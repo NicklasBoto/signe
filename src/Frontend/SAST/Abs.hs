@@ -36,7 +36,7 @@ data Expr
     | Tup [Expr]
     | Mul (Complex Double) Expr
     | App Expr Expr
-    | Plus Expr Expr
+    | Sup (Complex Double) Expr (Complex Double) Expr
     | Comp Expr Expr
     | Ifq Expr Expr Expr
     | If Expr Expr Expr

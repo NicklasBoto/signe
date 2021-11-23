@@ -28,18 +28,19 @@ revertToplevel (SAST.Topl id ps Nothing e)  = Signe.ToplF (revertId id) (map rev
 revertToplevel (SAST.Topl id ps (Just t) e) = Signe.ToplF (revertId id) (map revertPattern ps) (revertExpr e)
 
 convertExpr :: Signe.Expr -> SAST.Expr
-convertExpr (Signe.EVar id)     = SAST.Var $ convertId id
-convertExpr Signe.ETrue         = SAST.KetOne
-convertExpr Signe.EFalse        = SAST.KetZero
-convertExpr (Signe.ETup es)     = SAST.Tup $ map convertExpr es
-convertExpr (Signe.EMul k e)    = SAST.Mul (convertComplex k) (convertExpr e)
-convertExpr (Signe.EApp e1 e2)  = SAST.App (convertExpr e1) (convertExpr e2)
-convertExpr (Signe.EPlus e1 e2) = SAST.Plus (convertExpr e1) (convertExpr e2)
-convertExpr (Signe.EComp e1 e2) = SAST.Comp (convertExpr e1) (convertExpr e2)
-convertExpr (Signe.EIfq b t f)  = SAST.Ifq (convertExpr b) (convertExpr t) (convertExpr f)
-convertExpr (Signe.EIf b t f)   = SAST.If (convertExpr b) (convertExpr t) (convertExpr f)
-convertExpr (Signe.ELet ls e)   = SAST.Let (foldMap convertLet ls) (convertExpr e)
-convertExpr (Signe.EAbs ids e)  = SAST.Abs (map convertId ids) (convertExpr e)
+convertExpr (Signe.EVar id)                     = SAST.Var $ convertId id
+convertExpr Signe.ETrue                         = SAST.KetOne
+convertExpr Signe.EFalse                        = SAST.KetZero
+convertExpr (Signe.ETup es)                     = SAST.Tup $ map convertExpr es
+convertExpr (Signe.EMul k e)                    = SAST.Mul (convertComplex k) (convertExpr e)
+convertExpr (Signe.EApp e1 e2)                  = SAST.App (convertExpr e1) (convertExpr e2)
+convertExpr (Signe.ESup k e1 Signe.SOPlus l e2) = SAST.Sup (convertComplex k) (convertExpr e1) (convertComplex l) (convertExpr e2)
+convertExpr (Signe.ESup k e1 Signe.SOMin l e2)  = SAST.Sup (convertComplex k) (convertExpr e1) (- convertComplex l) (convertExpr e2)
+convertExpr (Signe.EComp e1 e2)                 = SAST.Comp (convertExpr e1) (convertExpr e2)
+convertExpr (Signe.EIfq b t f)                  = SAST.Ifq (convertExpr b) (convertExpr t) (convertExpr f)
+convertExpr (Signe.EIf b t f)                   = SAST.If (convertExpr b) (convertExpr t) (convertExpr f)
+convertExpr (Signe.ELet ls e)                   = SAST.Let (foldMap convertLet ls) (convertExpr e)
+convertExpr (Signe.EAbs ids e)                  = SAST.Abs (map convertId ids) (convertExpr e)
 
 revertExpr :: SAST.Expr -> Signe.Expr
 revertExpr (SAST.Var id)      = Signe.EVar $ revertId id
@@ -48,7 +49,7 @@ revertExpr SAST.KetZero       = Signe.EFalse
 revertExpr (SAST.Tup  es)     = Signe.ETup $ map revertExpr es
 revertExpr (SAST.Mul  k e)    = Signe.EMul (revertComplex k) (revertExpr e)
 revertExpr (SAST.App  e1 e2)  = Signe.EApp (revertExpr e1) (revertExpr e2)
-revertExpr (SAST.Plus  e1 e2) = Signe.EPlus (revertExpr e1) (revertExpr e2)
+revertExpr (SAST.Sup k e1 l e2) = Signe.ESup (revertComplex k) (revertExpr e1) Signe.SOPlus (revertComplex l) (revertExpr e2)
 revertExpr (SAST.Comp  e1 e2) = Signe.EComp (revertExpr e1) (revertExpr e2)
 revertExpr (SAST.Ifq  b t f)  = Signe.EIfq (revertExpr b) (revertExpr t) (revertExpr f)
 revertExpr (SAST.If  b t f)   = Signe.EIf (revertExpr b) (revertExpr t) (revertExpr f)

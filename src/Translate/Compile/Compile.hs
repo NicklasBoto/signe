@@ -135,14 +135,6 @@ compile env = \case
                 ]
             }
 
-    Mul k q -> return FQC
-        { input   = 0
-        , heap    = 1
-        , output  = 1
-        , garbage = 0
-        , unitary = Rot (C k, 0) (0, C k)
-        }
-
     Tup [] -> return FQC
         { input   = 0
         , heap    = 0
@@ -303,6 +295,11 @@ compile env = \case
                 , unitary ψ
                 ]
             }
+
+    Sup κ t λ u -> do
+        guard (abs κ ^ 2 + abs λ ^ 2 == 1) Urk 
+
+        undefined
 
     x -> throw Urk
 
@@ -519,18 +516,18 @@ swapW g = Perm
         . zip [0..]
 
 uses :: Expr -> Context
-uses (Var i)        = Set.singleton i
-uses KetZero        = Set.empty
-uses KetOne         = Set.empty
-uses (Tup xs)       = Set.unions $ map uses xs
-uses (Mul _ e)      = uses e
-uses (App e1 e2)    = on (<>) uses e1 e2
-uses (Plus e1 e2)   = on (<>) uses e1 e2
-uses (Comp e1 e2)   = on (<>) uses e1 e2
-uses (Ifq e1 e2 e3) = uses e1 <> uses e2 <> uses e3
-uses (If e1 e2 e3)  = uses e1 <> uses e2 <> uses e3
-uses (Abs a e)      = Set.difference (uses e) (Set.fromList a)
-uses (Let l e)      = Set.difference (uses e) ids <> exps
+uses (Var i)         = Set.singleton i
+uses KetZero         = Set.empty
+uses KetOne          = Set.empty
+uses (Tup xs)        = Set.unions $ map uses xs
+uses (Mul _ e)       = uses e
+uses (App e1 e2)     = on (<>) uses e1 e2
+uses (Sup _ e1 _ e2) = on (<>) uses e1 e2
+uses (Comp e1 e2)    = on (<>) uses e1 e2
+uses (Ifq e1 e2 e3)  = uses e1 <> uses e2 <> uses e3
+uses (If e1 e2 e3)   = uses e1 <> uses e2 <> uses e3
+uses (Abs a e)       = Set.difference (uses e) (Set.fromList a)
+uses (Let l e)       = Set.difference (uses e) ids <> exps
     where (ids, exps) = bimap
                             (Set.fromList . concat)
                             (Set.unions . map uses)

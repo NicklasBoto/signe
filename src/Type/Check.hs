@@ -266,7 +266,7 @@ infer c = \case
         sr       <- unify (apply sb ta) (tb :-> tv)
         return (sr ∘ sb ∘ sa, apply sr tv)
 
-    Plus a b -> do
+    Sup _ a _ b -> do
         (sa, ta) <- infer c a
         (sb, tb) <- infer c b
         sa'      <- unify (apply sb ta) TypeQubit

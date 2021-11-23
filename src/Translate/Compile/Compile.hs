@@ -27,12 +27,16 @@ import Translate.Matrix hiding (orthogonal)
 import Control.Lens hiding ( uses, Context )
 import Data.Maybe (catMaybes, mapMaybe, fromJust)
 import Debug.Trace
+import Type.Check (inferExpr)
 
 type Context = Set.Set Id
 type Env = Map.Map Id Int
 
 emptyEnv :: Env
 emptyEnv = Map.empty
+
+emptyContext :: Context
+emptyContext = Set.empty
 
 test :: Program
 test = parse "main : qubit * qubit := (~0, ~0)"
@@ -100,21 +104,6 @@ compile env = \case
         , unitary = Rot (C k, 0) (0, C k)
         }
 
-    Plus p q -> do
-        (ap, cp) <- amplitude p
-        (aq, cq) <- amplitude q
-        guard (orthogonal cp cq) Urk
-
-        let (k,v) = normalize ap aq
-
-        return FQC
-            { input   = 0
-            , heap    = 1
-            , output  = 1
-            , garbage = 0
-            , unitary = Rot (k, v) (v, -k)
-            }
-
     Tup [] -> return FQC
         { input   = 0
         , heap    = 0
@@ -173,6 +162,7 @@ compile env = \case
 
         let sized_is = Map.fromSet (const 1) (is `Set.intersection` uses u)
             nis      = length sized_is
+
         FQC iu hu ou gu φu <- compile (sized_is `Map.union` Map.fromList δ) u
 
         let perml = batchPermutation [it,iu-nis,ht,hu] [1,0,2,3]
@@ -194,8 +184,85 @@ compile env = \case
                 ]
             }
 
-    Ifq b t f -> do
-        return idFQC
+    If c t u -> do
+        let uc    = uses c
+            ub    = uses t `Set.union` uses u
+            vars  = Set.toList $ Set.union uc ub
+            γδ    = on (<>) Set.toList uc ub
+            φC    = contraction vars γδ
+            ixs   = map (fromJust . flip Map.lookup env) γδ
+            (γ,δ) = splitAt (length uc) (zip γδ ixs)
+
+        FQC ic hc oc gc φc <- compile (Map.fromList γ) c
+        FQC it ht ot gt φt <- compile (Map.fromList δ) t
+        FQC iu hu ou gu φu <- compile (Map.fromList δ) u
+
+        let FQC ib hb ob gb φb = FQC
+                { input   = 1 + length ub
+                , heap    = max ht hu
+                , output  = 1 + ot
+                , garbage = 0
+                , unitary = Cond φt φu
+                }
+
+        let perml = batchPermutation [ic,ib-1,hc,hb] [1,0,2,3]
+            permc = batchPermutation [ib-1,1,gc,hb]  [1,0,3,2]
+            permr = batchPermutation [1,ob-1,gc]     [1,0,2]
+            
+        return FQC
+            { input   = input φC
+            , heap    = heap φC + hc + hb
+            , output  = ob - 1
+            , garbage = gc + 1
+            , unitary = Ser
+                [ Par [unitary φC, iN (hc+hb)]
+                , Perm perml
+                , Par [iN (ib-1), φc, iN hb]
+                , Perm permc
+                , Par [φb, iN gc]
+                , Perm permr
+                ]
+            }
+
+    Ifq c t u -> do
+        let uc    = uses c
+            ub    = uses t `Set.union` uses u
+            vars  = Set.toList $ Set.union uc ub
+            γδ    = on (<>) Set.toList uc ub
+            φC    = contraction vars γδ
+            ixs   = map (fromJust . flip Map.lookup env) γδ
+            (γ,δ) = splitAt (length uc) (zip γδ ixs)
+
+        FQC ic hc oc gc φc <- compile (Map.fromList γ) c
+        FQC it ht ot gt φt <- compile (Map.fromList δ) t
+        FQC iu hu ou gu φu <- compile (Map.fromList δ) u
+
+        let FQC ib hb ob gb φb = FQC
+                { input   = 1 + length ub
+                , heap    = max ht hu
+                , output  = 1 + ot
+                , garbage = 0
+                , unitary = Cond φt φu
+                }
+
+        let perml = batchPermutation [ic,ib-1,hc,hb] [1,0,2,3]
+            permc = batchPermutation [ib-1,1,hb]     [1,0,2]
+            permr = batchPermutation [1,ob-1]        [1,0]
+            
+        return FQC
+            { input   = input φC
+            , heap    = heap φC + hc + hb
+            , output  = ob - 1
+            , garbage = gc + 1
+            , unitary = Ser
+                [ Par [unitary φC, iN (hc+hb)]
+                , Perm perml
+                , Par [iN (ib-1), φc, iN hb]
+                , Perm permc
+                , Par [φb, iN gc]
+                , Perm permr
+                ]
+            }
 
     x -> throw Urk
 
@@ -223,10 +290,95 @@ normalize :: C -> C -> (C, C)
 normalize a b = (a / norm a b, b / norm a b)
     where norm a b = sqrt $ abs a ^ 2 + abs b ^ 2
 
-orthogonal :: Expr -> Expr -> Bool
-orthogonal KetOne KetZero = True
-orthogonal KetZero KetOne = True
-orthogonal _       _      = False
+nullFQC :: FQC
+nullFQC = FQC
+    { input   = 0
+    , heap    = 0
+    , output  = 0
+    , garbage = 0
+    , unitary = Perm []
+    }
+
+orthogonal :: Env -> Expr -> Expr -> Result (Int, FQC, Context, FQC, Context, FQC)
+orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+    where ψ = FQC
+            { input   = 1
+            , heap    = 0
+            , output  = 1
+            , garbage = 0
+            , unitary = Perm [0]
+            }
+
+orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+    where ψ = FQC
+            { input   = 1
+            , heap    = 0
+            , output  = 1
+            , garbage = 0
+            , unitary = Rot (0,1) (1,0)
+            }
+
+orthogonal env (Tup [t,v]) (Tup [u,w]) = do
+    (c,l,lc,r,rc,ψ) <- orthogonal env t u
+
+    let uv = uses v
+        varsl = Set.toList $ Set.union uv lc
+        γδl = on (<>) Set.toList uv lc
+        φCl = contraction varsl γδl
+        ixsl    = map (fromJust . flip Map.lookup env) γδl
+        (γl,δl) = splitAt (length lc) (zip γδl ixsl)
+
+    let uw = uses w
+        varsr = Set.toList $ Set.union uw rc
+        γδr = on (<>) Set.toList uw rc
+        φCr = contraction varsr γδr
+        ixsr = map (fromJust . flip Map.lookup env) γδr
+        (γr,δr) = splitAt (length rc) (zip γδr ixsr)
+    
+    FQC iv hv ov gv ψv <- compile (Map.fromList δl) v 
+    FQC iw hw ow gw ψw <- compile (Map.fromList δr) w
+
+    let c' = c + ov
+        ρ  = output ψ + ov
+        ψ' = FQC
+            { input   = c' + 1
+            , heap    = 0
+            , output  = ρ 
+            , garbage = 0
+            , unitary = Ser
+                [ Perm $ batchPermutation [c,ov,1] [0,2,1]
+                , Par [unitary ψ, iN ov]
+                ]
+            }
+
+    let perml = batchPermutation [input l,iv,heap l,hv] [0,2,1,3]
+        l' = FQC
+            { input   = input φCl
+            , heap    = heap φCl + heap l + hv
+            , output  = output l + ov
+            , garbage = 0
+            , unitary = Ser
+                [ Par [unitary φCl, iN (heap l + hv)]
+                , Perm perml
+                , Par [unitary l, ψv]
+                ]
+            }
+    let permr = batchPermutation [input l,iv,heap l,hv] [0,2,1,3]
+        r' = FQC
+            { input   = input φCr
+            , heap    = heap φCr + heap r + hw
+            , output  = output r + ow
+            , garbage = 0
+            , unitary = Ser
+                [ Par [unitary φCr, iN (heap r + hw)]
+                , Perm permr
+                , Par [unitary r, ψw]
+                ]
+            }
+
+    return (c', l', lc `Set.union` uses v, r', rc `Set.union` uses w, ψ')
+
+orthogonal env _ _ = undefined
 
 amplitude :: Expr -> Result (C, Expr)
 amplitude KetZero   = return (1, KetZero)

@@ -1,9 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLists   #-}
-{-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE TupleSections     #-}
-{-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE LambdaCase        #-}
 
 module Translate.Compile.Compile where
@@ -12,7 +10,6 @@ import Frontend.SAST.Abs
 import Translate.FQC
 import Translate.Unitary
 import Frontend.SAST.Par
-import Frontend.SAST.Print
 import Translate.Result
 import Data.Complex
 import Data.Tuple (swap)
@@ -21,7 +18,6 @@ import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Data.List
 import Data.List.Split
-import Control.Monad hiding ( guard )
 import Data.Function
 import Translate.Matrix hiding (orthogonal)
 import Control.Lens hiding ( uses, Context )
@@ -43,15 +39,6 @@ test = parse "main : qubit * qubit := (~0, ~0)"
 
 showSer :: Unitary -> IO ()
 showSer ~(Ser xs) = putStrLn $ intercalate "\n" $ map show xs 
-
-idFQC :: FQC
-idFQC = FQC
-    { input   = 1
-    , heap    = 0
-    , output  = 1
-    , garbage = 0
-    , unitary = Perm [0]
-    }
 
 testCompile :: String -> Unitary
 testCompile = testResult . fmap (removeEmpties . unitary) . compile emptyEnv . parseExpr
@@ -101,7 +88,24 @@ compile env = \case
         , unitary = Rot (0,1) (1,0)
         }
 
-    Abs xs e -> compile (Map.fromList (zip xs (repeat 1)) `Map.union` env) e
+    -- Abs xs e -> compile (Map.fromList (zip xs (repeat 1)) `Map.union` env) e 
+    --          <&> \f@FQC{input=i} -> f{input = i + length (Set.fromList xs Set.\\ uses e)}
+    -- Abs xs e -> do
+    --     let u    = uses e
+    --         diff = length $ Set.fromList xs Set.\\ u
+    --         env' = Map.fromList (zip xs (repeat 1)) `Map.union` env
+
+    --     FQC i h o g φ <- compile env' e 
+
+    --     return FQC
+    --         { input   = i + diff
+    --         , heap    = h
+    --         , output  = o
+    --         , garbage = g + diff
+    --         , unitary = Ser
+    --             [  
+    --             ]
+    --         }
 
     App f x -> do
         let uf = uses f 
@@ -114,8 +118,7 @@ compile env = \case
 
         FQC iF hf oF gf φf <- compile (Map.fromList γ) f
         FQC ix hx ox gx φx <- compile (Map.fromList δ) x
-        
-        
+
         let perml = batchPermutation [ix,iF-ox,hx,hf] [1,0,2,3]
             permc = batchPermutation [iF-ox,ox,gx,hf] [0,1,3,2]
             permr = batchPermutation [oF,gf,gx]       [0,2,1]
@@ -173,9 +176,9 @@ compile env = \case
 
     Tup (x:xs) -> compile env $ Tup [x, Tup xs]
 
-    Let i u -> do
-        let (xs,t) = Map.elemAt 0 i
-            is = Set.fromList xs
+    -- TODO: nest multiple let's
+    Let [(xs,t)] u -> do
+        let is = Set.fromList xs
             ut = uses t
             uu = uses u `Set.difference` is
             ψ  = Set.toList $ Set.union ut uu
@@ -199,7 +202,7 @@ compile env = \case
         let perml = batchPermutation [it,iu-nis,ht,hu] [1,0,2,3]
             permc = batchPermutation [iu-nis,ot,gt,hu] [0,1,3,2]
             permr = batchPermutation [ou,gu,gt] [0,2,1]
-
+        
         return FQC
             { input   = input φC
             , heap    = heap φC + ht + hu
@@ -296,10 +299,21 @@ compile env = \case
                 ]
             }
 
-    Sup κ t λ u -> do
-        guard (abs κ ^ 2 + abs λ ^ 2 == 1) Urk 
+    Mul k t -> do
+        f@FQC{input=i, heap=h} <- compile env t
+        let φ' = Par $ replicate (i+h) (Rot (C k, 0) (0, C k))
+        return f{unitary=φ'}
 
-        undefined
+    Sup κ KetOne λ KetZero -> return FQC
+        { input   = 0
+        , heap    = 1
+        , output  = 1
+        , garbage = 0
+        , unitary = Rot (C κ,C λ) (C λ, -C κ)
+        }
+
+    Sup κ t λ u -> guard (C (abs κ ^ 2 + abs λ ^ 2) == 1) Urk 
+                >> compile env (Ifq (Sup κ KetOne λ KetZero) t u)
 
     x -> throw Urk
 
@@ -315,12 +329,6 @@ nonEmpty (Par [])   = False
 nonEmpty (Ser [])   = False
 nonEmpty (Cond t f) = nonEmpty t || nonEmpty f
 nonEmpty _          = True
-
-contextPerm :: Int -> Int -> Int -> Int -> Unitary
-contextPerm size a b c = Perm perm
-    where band = [0..size-1]
-          (γ,(δ,(ηt,ηu))) = second (second (splitAt a) . splitAt b) (splitAt c band)
-          perm = γ <> ηt <> δ <> ηu
 
 batchPermutation :: [Int] -> [Int] -> [Int]
 batchPermutation c = concatMap (splitPlaces c [0..sum c] !!)
@@ -339,7 +347,7 @@ nullFQC = FQC
     }
 
 orthogonal :: Env -> Expr -> Expr -> Result (Int, FQC, Context, FQC, Context, FQC)
-orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
     where ψ = FQC
             { input   = 1
             , heap    = 0
@@ -348,7 +356,7 @@ orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, empty
             , unitary = Perm [0]
             }
 
-orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
     where ψ = FQC
             { input   = 1
             , heap    = 0
@@ -417,39 +425,20 @@ orthogonal env (Tup [t,v]) (Tup [u,w]) = do
 
     return (c', l', lc `Set.union` uses v, r', rc `Set.union` uses w, ψ')
 
+orthogonal env a@(Sup λ0 t λ1 u) b@(Sup κ0 v κ1 w) = do
+    guard (conjugate λ0 * κ0 == - conjugate λ1 * κ0) (BranchesNotOrthonogal a b)
+    (c,l,lc,r,rc,ψ) <- orthogonal env t u
+    let φ  = Rot (C λ0, C κ0) (C λ1, C κ1)
+        ψ' = ψ
+            { unitary = Ser
+                [ Par [iN c, φ]
+                , unitary ψ
+                ]
+            }
+
+    return (c,l,lc,r,rc,ψ')
+
 orthogonal _ t f = throw $ BranchesNotOrthonogal t f
-
-amplitude :: Expr -> Result (C, Expr)
-amplitude KetZero   = return (1, KetZero)
-amplitude KetOne    = return (1, KetOne)
-amplitude (Mul k q) = return (C k, q)
-amplitude _ = throw Urk
-
-h :: FQC
-h = FQC
-    { input   = 1
-    , heap    = 1
-    , output  = 2
-    , garbage = 0
-    , unitary = Par [Rot (λ,λ) (λ,-λ), Perm [0]]
-    } where λ = 1 / sqrt 2
-
-cx :: FQC
-cx = FQC
-    { input   = 2
-    , heap    = 0
-    , output  = 2
-    , garbage = 0
-    , unitary = Cond (Rot (0,1) (1,0)) (Perm [0])
-    }
-
-splitContext :: Context -> Expr -> Expr -> (Context, Context, FQC)
-splitContext c e1 e2 = (ue1, ue2, fqc)
-    where ue1 = uses e1
-          ue2 = uses e2
-          both = Set.intersection ue1 ue2
-          shareN = Set.size both
-          fqc = undefined
 
 contraction :: [Id] -> [Id] -> FQC
 contraction i o = FQC
@@ -489,7 +478,6 @@ shares size ~(i:is) = Ser $ map circ is
 
 iN :: Int -> Unitary
 iN x = Perm [0..x-1]
-
 
 pX :: Unitary
 pX = Rot (0,1) (1,0)

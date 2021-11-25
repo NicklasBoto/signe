@@ -12,7 +12,7 @@ module Translate.Error
     , pattern Urk
     ) where
 
-import Translate.Unitary.Data ( Unitary )
+import Translate.Unitary.Data ( Unitary, C )
 import Frontend.SAST.Abs ( Expr )
 import Frontend.SAST.Print ()
 
@@ -32,9 +32,9 @@ data TranslationError
     | RotationNotOrthogonal Unitary
     -- | Branches of a strict conditional are not orthogonal
     | BranchesNotOrthonogal Expr Expr
+    -- | 
+    | SuperpositionNotNormalized C C
     
-
-
 -- | Placeholder error, or impossible error
 pattern Urk :: TranslationError
 pattern Urk = Fail "The designer of this compiler has not covered his tracks, and this error should never occur."
@@ -47,3 +47,4 @@ instance Show TranslationError where
     show (MalformedPermutationPattern ns) = "MalformedPermutationPattern: Pattern is not a permutation of [0..n-1]\n" ++ show ns
     show (RotationNotOrthogonal u)        = "RotationNotOrthogonal: Rotation is not orthogonal" ++ show u
     show (BranchesNotOrthonogal t f)      = "BranchesNotOrthogonal: Branches of strict conditional are not orthogonal\n" ++ show (t,f)
+    show (SuperpositionNotNormalized κ λ) = "SuperpositonsNotNormalized: URKIDURK"

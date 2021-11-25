@@ -43,18 +43,18 @@ convertExpr (Signe.ELet ls e)                   = SAST.Let (foldMap convertLet l
 convertExpr (Signe.EAbs ids e)                  = SAST.Abs (map convertId ids) (convertExpr e)
 
 revertExpr :: SAST.Expr -> Signe.Expr
-revertExpr (SAST.Var id)      = Signe.EVar $ revertId id
-revertExpr SAST.KetOne        = Signe.ETrue
-revertExpr SAST.KetZero       = Signe.EFalse        
-revertExpr (SAST.Tup  es)     = Signe.ETup $ map revertExpr es
-revertExpr (SAST.Mul  k e)    = Signe.EMul (revertComplex k) (revertExpr e)
-revertExpr (SAST.App  e1 e2)  = Signe.EApp (revertExpr e1) (revertExpr e2)
+revertExpr (SAST.Var id)        = Signe.EVar $ revertId id
+revertExpr SAST.KetOne          = Signe.ETrue
+revertExpr SAST.KetZero         = Signe.EFalse        
+revertExpr (SAST.Tup  es)       = Signe.ETup $ map revertExpr es
+revertExpr (SAST.Mul  k e)      = Signe.EMul (revertComplex k) (revertExpr e)
+revertExpr (SAST.App  e1 e2)    = Signe.EApp (revertExpr e1) (revertExpr e2)
 revertExpr (SAST.Sup k e1 l e2) = Signe.ESup (revertComplex k) (revertExpr e1) Signe.SOPlus (revertComplex l) (revertExpr e2)
-revertExpr (SAST.Comp  e1 e2) = Signe.EComp (revertExpr e1) (revertExpr e2)
-revertExpr (SAST.Ifq  b t f)  = Signe.EIfq (revertExpr b) (revertExpr t) (revertExpr f)
-revertExpr (SAST.If  b t f)   = Signe.EIf (revertExpr b) (revertExpr t) (revertExpr f)
-revertExpr (SAST.Let  ls e)   = Signe.ELet (revertLet ls) (revertExpr e)
-revertExpr (SAST.Abs  ids e)  = Signe.EAbs (map revertId ids) (revertExpr e)
+revertExpr (SAST.Comp  e1 e2)   = Signe.EComp (revertExpr e1) (revertExpr e2)
+revertExpr (SAST.Ifq  b t f)    = Signe.EIfq (revertExpr b) (revertExpr t) (revertExpr f)
+revertExpr (SAST.If  b t f)     = Signe.EIf (revertExpr b) (revertExpr t) (revertExpr f)
+revertExpr (SAST.Let  ls e)     = Signe.ELet (revertLet ls) (revertExpr e)
+revertExpr (SAST.Abs  ids e)    = Signe.EAbs (map revertId ids) (revertExpr e)
 
 convertComplex :: Signe.Complex -> Complex Double
 convertComplex (Signe.CComp re im) = convertScalar re :+ convertScalar im

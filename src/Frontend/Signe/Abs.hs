@@ -90,7 +90,7 @@ eabss :: [Id] -> Expr -> Expr
 eabss x m = EAbs x m
 
 sunit :: Expr -> SupOp -> Expr -> Expr
-sunit e1 op e2 = ESup (creal (Scalar "1")) e1 op (creal (Scalar "1")) e2
+sunit e1 op e2 = ESup (creal (Scalar "0.7071067811865475")) e1 op (creal (Scalar "0.7071067811865475")) e2
 
 creal :: Scalar -> Complex
 creal r = CComp r (Scalar "0")

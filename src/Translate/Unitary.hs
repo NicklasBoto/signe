@@ -44,7 +44,7 @@ inner :: (C, C) -> (C, C) -> C
 inner (i,j) (k,l) = C $ on dot (fromList . map complex) [i,j] [k,l]
 
 rotations :: (C, C) -> (C, C) -> [C]
-rotations (i,j) (k,l) = [i,j,k,l]
+rotations (i,j) (k,l) = [i,k,j,l]
 
 crotations :: (C, C) -> (C, C) -> [Cx.Complex Double]
 crotations = (map complex .) . rotations

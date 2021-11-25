@@ -12,12 +12,12 @@ module Frontend.SAST.Par
     ) where
 
 import Frontend.Signe.Par
-    ( myLexer, pExpr, pProgram, pToplevel, pType )
+    ( myLexer, pExpr, pProgram, pToplevel, pType, pMono )
 import Frontend.Signe.Lex ( Token )
 import Frontend.Signe.Layout ( resolveLayout )
-import Frontend.SAST.Abs ( Expr, Program, Scheme, Toplevel, Id(..) )
+import Frontend.SAST.Abs ( Expr, Program, Scheme, Toplevel, Id(..), Type)
 import Frontend.SAST.Convert
-    ( convert, convertExpr, convertToplevel, convertType )
+    ( convert, convertExpr, convertToplevel, convertType, convertMono )
 import Data.String ( IsString(..) )
 
 instance IsString Id where
@@ -33,6 +33,12 @@ parseExpr = convertExpr `ofParser` pExpr
 
 instance IsString Expr where
     fromString = parseExpr
+
+parseMono :: String -> Type 
+parseMono = convertMono `ofParser` pMono
+
+instance IsString Type where
+    fromString = parseMono
 
 parseType :: String -> Scheme
 parseType = convertType `ofParser` pType

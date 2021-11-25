@@ -3,8 +3,11 @@
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE TupleSections     #-}
 {-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE MagicHash, CPP    #-}
 
 module Translate.Compile.Compile where
+
+#define DEBUG
 
 import Frontend.SAST.Abs
 import Translate.FQC
@@ -12,6 +15,7 @@ import Translate.Unitary
 import Frontend.SAST.Par
 import Translate.Result
 import Data.Complex
+import Control.Monad (foldM)
 import Data.Tuple (swap)
 import Data.Bifunctor
 import qualified Data.Set as Set
@@ -20,6 +24,7 @@ import Data.List
 import Data.List.Split
 import Data.Function
 import Translate.Matrix hiding (orthogonal)
+import qualified Translate.Matrix as Matrix
 import Control.Lens hiding ( uses, Context )
 import Data.Maybe (catMaybes, mapMaybe, fromJust)
 import Debug.Trace
@@ -34,8 +39,7 @@ emptyEnv = Map.empty
 emptyContext :: Context
 emptyContext = Set.empty
 
-test :: Program
-test = parse "main : qubit * qubit := (~0, ~0)"
+#ifdef DEBUG
 
 showSer :: Unitary -> IO ()
 showSer ~(Ser xs) = putStrLn $ intercalate "\n" $ map show xs 
@@ -43,13 +47,37 @@ showSer ~(Ser xs) = putStrLn $ intercalate "\n" $ map show xs
 testCompile :: String -> Unitary
 testCompile = testResult . fmap (removeEmpties . unitary) . compile emptyEnv . parseExpr
 
-compileExpr :: String -> IO ()
-compileExpr e = print (FQC i h g o φ') >> putStrLn "" >> print (testResult $ matrix φ')
-    where FQC i h g o φ = testResult . compile emptyEnv $ parseExpr e
+compileIO :: (String -> Result FQC) -> String -> IO ()
+compileIO f e = print (FQC i h g o φ') >> putStrLn "" >> print (testResult $ matrix φ')
+    where FQC i h g o φ = testResult $ f e
           φ' = removeEmpties φ
 
 showCompile :: String -> IO ()
 showCompile = showSer . testCompile
+
+compileExpr :: String -> IO ()
+compileExpr = compileIO (compile emptyEnv . parseExpr)
+
+compileFile :: FilePath -> IO ()
+compileFile path = compileIO (compileToplevel emptyEnv . head . parse) =<< readFile path
+
+#endif
+
+compileToplevel :: Env -> Toplevel -> Result FQC
+compileToplevel env (Topl f vars (Just (Forall [] t)) e) = compile (argumentEnv vars t `Map.union` env) e
+compileToplevel _ _ = throw NotImplemented
+
+argumentEnv :: [[Id]] -> Type -> Env
+argumentEnv [] _t = Map.empty
+argumentEnv (v:vs) ~(t :-> ts) = go v t `Map.union` argumentEnv vs ts
+    where 
+          go :: [Id] -> Type -> Env
+          go [i] s = Map.singleton i (typeSize s)
+          go ~(i:is) ~(s :* ss) = Map.insert i (typeSize s) $ go is ss
+
+          typeSize :: Type -> Int
+          typeSize (σ :* τ) = typeSize σ + typeSize τ
+          typeSize _ = 1 
 
 compile :: Env -> Expr -> Result FQC
 compile env = \case
@@ -88,24 +116,7 @@ compile env = \case
         , unitary = Rot (0,1) (1,0)
         }
 
-    -- Abs xs e -> compile (Map.fromList (zip xs (repeat 1)) `Map.union` env) e 
-    --          <&> \f@FQC{input=i} -> f{input = i + length (Set.fromList xs Set.\\ uses e)}
-    -- Abs xs e -> do
-    --     let u    = uses e
-    --         diff = length $ Set.fromList xs Set.\\ u
-    --         env' = Map.fromList (zip xs (repeat 1)) `Map.union` env
-
-    --     FQC i h o g φ <- compile env' e 
-
-    --     return FQC
-    --         { input   = i + diff
-    --         , heap    = h
-    --         , output  = o
-    --         , garbage = g + diff
-    --         , unitary = Ser
-    --             [  
-    --             ]
-    --         }
+    Abs xs e -> compile (Map.fromList (zip xs (repeat 1)) `Map.union` env) e 
 
     App f x -> do
         let uf = uses f 
@@ -176,7 +187,6 @@ compile env = \case
 
     Tup (x:xs) -> compile env $ Tup [x, Tup xs]
 
-    -- TODO: nest multiple let's
     Let [(xs,t)] u -> do
         let is = Set.fromList xs
             ut = uses t
@@ -425,10 +435,10 @@ orthogonal env (Tup [t,v]) (Tup [u,w]) = do
 
     return (c', l', lc `Set.union` uses v, r', rc `Set.union` uses w, ψ')
 
-orthogonal env a@(Sup λ0 t λ1 u) b@(Sup κ0 v κ1 w) = do
-    guard (conjugate λ0 * κ0 == - conjugate λ1 * κ0) (BranchesNotOrthonogal a b)
+orthogonal env (Sup λ0 t λ1 u) (Sup κ0 v κ1 w) = do
+    Matrix.orthogonal (C λ0, C κ0) (C λ1, C κ1)
     (c,l,lc,r,rc,ψ) <- orthogonal env t u
-    let φ  = Rot (C λ0, C κ0) (C λ1, C κ1)
+    let φ  = Rot (C κ0, C κ1) (C λ0, C λ1) 
         ψ' = ψ
             { unitary = Ser
                 [ Par [iN c, φ]

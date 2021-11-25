@@ -1,0 +1,4 @@
+CNOT c t : qubit -> qubit -> qubit * qubit
+ := if° c
+      then (~1, (λx.if° x then ~0 else ~1) t)
+      else (~0, t)

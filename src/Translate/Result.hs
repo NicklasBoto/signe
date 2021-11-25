@@ -19,7 +19,7 @@ module Translate.Result
     , testResult
     ) where
 
-import Translate.Error ( TranslationError(..), pattern Urk )
+import Translate.Error ( TranslationError(..), pattern Urk, pattern NotImplemented )
 import Control.Monad.Except
     ( runExcept, MonadError, Except, ExceptT(ExceptT), throwError )
 

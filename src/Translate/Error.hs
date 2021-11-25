@@ -10,6 +10,7 @@ Exports the datatype for errors during translation and compilation
 module Translate.Error
     ( TranslationError(..)
     , pattern Urk
+    , pattern NotImplemented
     ) where
 
 import Translate.Unitary.Data ( Unitary, C )
@@ -36,8 +37,9 @@ data TranslationError
     | SuperpositionNotNormalized C C
     
 -- | Placeholder error, or impossible error
-pattern Urk :: TranslationError
+pattern Urk, NotImplemented :: TranslationError
 pattern Urk = Fail "The designer of this compiler has not covered his tracks, and this error should never occur."
+pattern NotImplemented = Fail "This feature is not yet implemented"
 
 instance Show TranslationError where
     show (Fail s) = s

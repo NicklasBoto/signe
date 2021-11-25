@@ -66,10 +66,10 @@ data Type = TMono Mono | TPoly [Id] Mono
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 qplus :: Expr
-qplus = sunit EFalse SOPlus ETrue
+qplus = sunit ETrue SOPlus EFalse
 
 qminus :: Expr
-qminus = sunit EFalse SOMin ETrue
+qminus = sunit ETrue SOMin EFalse
 
 qimagi :: Expr
 qimagi = EMul cjmag ETrue
@@ -90,7 +90,7 @@ eabss :: [Id] -> Expr -> Expr
 eabss x m = EAbs x m
 
 sunit :: Expr -> SupOp -> Expr -> Expr
-sunit e1 op e2 = ESup (creal (Scalar "1/(sqrt 2)")) e1 op (creal (Scalar "1/(sqrt 2)")) e2
+sunit e1 op e2 = ESup (creal (Scalar "0.7071067811865475")) e1 op (creal (Scalar "0.7071067811865475")) e2
 
 creal :: Scalar -> Complex
 creal r = CComp r (Scalar "0")

@@ -357,7 +357,7 @@ nullFQC = FQC
     }
 
 orthogonal :: Env -> Expr -> Expr -> Result (Int, FQC, Context, FQC, Context, FQC)
-orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
     where ψ = FQC
             { input   = 1
             , heap    = 0
@@ -366,7 +366,7 @@ orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, empty
             , unitary = Perm [0]
             }
 
-orthogonal env KetOne KetZero = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
+orthogonal env KetZero KetOne = return (0, nullFQC, emptyContext, nullFQC, emptyContext, ψ)
     where ψ = FQC
             { input   = 1
             , heap    = 0
@@ -438,7 +438,7 @@ orthogonal env (Tup [t,v]) (Tup [u,w]) = do
 orthogonal env (Sup λ0 t λ1 u) (Sup κ0 v κ1 w) = do
     Matrix.orthogonal (C λ0, C κ0) (C λ1, C κ1)
     (c,l,lc,r,rc,ψ) <- orthogonal env t u
-    let φ  = Rot (C κ0, C κ1) (C λ0, C λ1) 
+    let φ  = Rot (C κ0, C κ1) (C λ1, C λ0) 
         ψ' = ψ
             { unitary = Ser
                 [ Par [iN c, φ]

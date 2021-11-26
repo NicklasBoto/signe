@@ -1,4 +1,15 @@
-CNOT c t : qubit -> qubit -> qubit * qubit
+-- H q : qubit -> qubit
+--  := if° q
+--       then ~-
+--       else ~+
+
+-- X q : qubit -> qubit
+--  := if° q
+--       then ~0
+--       else ~1
+
+CX c t : qubit -> qubit -> qubit * qubit
  := if° c
       then (~1, (λx.if° x then ~0 else ~1) t)
       else (~0, t)
+

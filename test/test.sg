@@ -8,8 +8,11 @@
 --       then ~0
 --       else ~1
 
-CX c t : qubit -> qubit -> qubit * qubit
- := if° c
-      then (~1, (λx.if° x then ~0 else ~1) t)
-      else (~0, t)
+-- CX c t : qubit -> qubit -> qubit * qubit
+--  := if° c
+--       then (~1, (λx.if° x then ~0 else ~1) t)
+--       else (~0, t)
+
+meas q : qubit -> qubit
+ := let (x,y) = (q,q) in x
 

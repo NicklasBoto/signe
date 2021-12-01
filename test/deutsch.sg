@@ -1,0 +1,5 @@
+deutsch oracle : ((qubit * qubit) -> qubit * qubit) -> qubit
+ := let (x,y) = oracle (~+, ~-) in
+    let h = if° x then ~- else ~+ in
+    let (r,q) = (h,h)
+     in r

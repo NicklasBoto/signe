@@ -94,6 +94,13 @@ newtype Check a = Check { getCheck :: ExceptT TypeError (State Int) a }
 checkProgram :: Program -> Either TypeError [(Id, Scheme)]
 checkProgram = mapM <$> checkToplevel . generateContext <*> id
 
+checkMain :: Program -> Either TypeError Scheme
+checkMain prog = case checkProgram prog of
+    Left e -> Left e
+    Right ts -> case lookup (Id Nothing "main") ts of
+        Nothing -> Left NoMainFunction
+        Just t -> return t
+
 -- checkToplevel :: Check Context -> Toplevel -> Either TypeError (Id, Scheme, Context)
 -- checkToplevel cc (Topl n as Nothing e) = (n,) <$> runCheck do
 --     c <- cc

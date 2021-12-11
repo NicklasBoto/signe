@@ -15,7 +15,7 @@ import Translate.Unitary
 import Frontend.SAST.Par
 import Translate.Result
 import Data.Complex
-import Control.Monad (foldM)
+import Control.Monad (foldM, (<=<))
 import Data.Tuple (swap)
 import Data.Bifunctor
 import qualified Data.Set as Set
@@ -28,7 +28,7 @@ import qualified Translate.Matrix as Matrix
 import Control.Lens hiding ( uses, Context )
 import Data.Maybe (catMaybes, mapMaybe, fromJust)
 import Debug.Trace
-import Type.Check (inferExpr)
+import Type.Check (inferExpr, checkMain)
 
 type Context = Set.Set Id
 type Env = Map.Map Id Int
@@ -47,21 +47,35 @@ showSer ~(Ser xs) = putStrLn $ intercalate "\n" $ map show xs
 testCompile :: String -> Unitary
 testCompile = testResult . fmap (removeEmpties . unitary) . compile emptyEnv . parseExpr
 
-compileIO :: (String -> Result FQC) -> String -> IO ()
-compileIO f e = print (FQC i h g o φ') >> putStrLn "" >> print (testResult $ matrix φ')
-    where FQC i h g o φ = testResult $ f e
-          φ' = removeEmpties φ
-
 showCompile :: String -> IO ()
 showCompile = showSer . testCompile
 
 compileExpr :: String -> IO ()
 compileExpr = compileIO (compile emptyEnv . parseExpr)
 
-compileFile :: FilePath -> IO ()
-compileFile path = compileIO (compileToplevel emptyEnv . head . parse) =<< readFile path
-
 #endif
+
+compileIO :: (String -> Result FQC) -> String -> IO ()
+compileIO f e = print (FQC i h g o φ') >> putStrLn "" >> print m
+    where FQC i h g o φ = testResult $ f e
+          φ' = removeEmpties φ
+          m = testResult (matrix φ')
+
+compileString :: String -> IO ()
+compileString = compileIO (compileProgram . parse)
+
+compileFile :: FilePath -> IO ()
+compileFile = compileIO (compileProgram . parse) <=< readFile
+
+compileProgram :: Program -> Result FQC
+compileProgram prog = case main of
+    Topl _ vars (Just (Forall [] t)) e -> compile (argumentEnv vars t) e
+    Topl _ _ (Just _) _ -> throw NotImplemented
+    Topl _ vars Nothing e -> case checkMain prog of
+        Left e -> throw $ TypeError e
+        Right (Forall [] t) -> compile (argumentEnv vars t) e
+        Right _ -> throw NotImplemented
+    where main = fromJust $ find (\(Topl f _ _ _) -> f == Id Nothing "main") prog
 
 compileToplevel :: Env -> Toplevel -> Result FQC
 compileToplevel env (Topl f vars (Just (Forall [] t)) e) = compile (argumentEnv vars t `Map.union` env) e

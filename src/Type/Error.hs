@@ -18,6 +18,7 @@ data TypeError
     | InfiniteType Id Type
     | VariableNotInScope Id
     | ScalarNotNormalized Expr
+    | NoMainFunction
 
 instance Show TypeError where
     show (TypeMismatch e a) =
@@ -36,6 +37,9 @@ instance Show TypeError where
     
     show (ScalarNotNormalized e) =
         "Scalar is not normalized: " ++ show e
+
+    show NoMainFunction =
+        "Main function not defined"
 
 urk :: a
 urk = error "urk"

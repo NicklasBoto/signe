@@ -16,6 +16,7 @@ module Translate.Error
 import Translate.Unitary.Data ( Unitary, C )
 import Frontend.SAST.Abs ( Expr )
 import Frontend.SAST.Print ()
+import Type.Error
 
 -- | The set of errors that can occur during circuit translation and compilation
 data TranslationError
@@ -35,6 +36,8 @@ data TranslationError
     | BranchesNotOrthonogal Expr Expr
     -- | 
     | SuperpositionNotNormalized C C
+    -- | Type errors
+    | TypeError TypeError
     
 -- | Placeholder error, or impossible error
 pattern Urk, NotImplemented :: TranslationError
@@ -50,3 +53,4 @@ instance Show TranslationError where
     show (RotationNotOrthogonal u)        = "RotationNotOrthogonal: Rotation is not orthogonal" ++ show u
     show (BranchesNotOrthonogal t f)      = "BranchesNotOrthogonal: Branches of strict conditional are not orthogonal\n" ++ show (t,f)
     show (SuperpositionNotNormalized κ λ) = "SuperpositonsNotNormalized: URKIDURK"
+    show (TypeError e) = "Type Error:\n" ++ show e

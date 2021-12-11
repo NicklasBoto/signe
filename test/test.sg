@@ -1,9 +1,9 @@
--- H q : qubit -> qubit
---  := if° q
+--H q : qubit -> qubit
+-- := if° q
 --       then ~-
 --       else ~+
 
--- X q : qubit -> qubit
+--X q : qubit -> qubit
 --  := if° q
 --       then ~0
 --       else ~1

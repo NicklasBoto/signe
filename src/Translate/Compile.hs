@@ -5,7 +5,7 @@
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE MagicHash, CPP    #-}
 
-module Translate.Compile.Compile where
+module Translate.Compile where
 
 #define DEBUG
 
@@ -462,6 +462,21 @@ orthogonal env (Sup λ0 t λ1 u) (Sup κ0 v κ1 w) = do
 
     return (c,l,lc,r,rc,ψ')
 
+orthogonal env (Mul κ t) (Mul λ u) = do
+    (c,l,lc,r,rc,ψ) <- orthogonal env t u
+    let φ  = Rot (C λ, 0) (0, C κ)
+        ψ' = ψ
+            { unitary = Ser
+                [ Par [iN c, φ]
+                , unitary ψ   
+                ]
+            } 
+
+    return (c,l,lc,r,rc,ψ')
+
+orthogonal env m@(Mul κ t) u = orthogonal env m (Mul 1 u)
+orthogonal env u m@(Mul κ t) = orthogonal env (Mul 1 u) m
+
 orthogonal _ t f = throw $ BranchesNotOrthonogal t f
 
 contraction :: [Id] -> [Id] -> FQC
@@ -555,3 +570,8 @@ comp (FQC iα hα oα gα α) (FQC iβ hβ oβ gβ β)
     , garbage = gα + gβ
     , unitary = Ser [β, α]
     }
+
+average :: Num a => [a] -> a
+average = undefined
+
+f = average . (zipWith ((logBase 2 .) . flip (/)) <$> id <*> tail)

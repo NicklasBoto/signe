@@ -32,6 +32,7 @@ dependencies:
 - hmatrix
 - lens
 - split
+- mfsolve
 
 library:
   source-dirs: src

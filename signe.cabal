@@ -38,10 +38,11 @@ library
       Frontend.Signe.Skel
       Frontend.Signe.Test
       Lib
-      Translate.Compile.Compile
+      Translate.Compile
       Translate.Error
       Translate.FQC
       Translate.FQC.Data
+      Translate.Generate
       Translate.Matrix
       Translate.Reality.Check
       Translate.Reality.Error
@@ -63,6 +64,7 @@ library
     , containers
     , hmatrix
     , lens
+    , mfsolve
     , mtl
     , pretty
     , split
@@ -84,6 +86,7 @@ executable signe
     , containers
     , hmatrix
     , lens
+    , mfsolve
     , mtl
     , pretty
     , signe
@@ -107,6 +110,7 @@ test-suite signe-test
     , containers
     , hmatrix
     , lens
+    , mfsolve
     , mtl
     , pretty
     , signe

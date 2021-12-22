@@ -26,6 +26,4 @@
 --                     in (X x, y)
 
 
-main := if ~0 then ~1 else ~0
-
--- k0 + k1 + k0 - k1
+main := ~+

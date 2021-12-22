@@ -61,6 +61,9 @@ compileIO f e = print (FQC i h g o φ') >> putStrLn "" >> print m
           φ' = removeEmpties φ
           m = testResult (matrix φ')
 
+removeEmptyFQC :: FQC -> FQC
+removeEmptyFQC (FQC i h g o f) = FQC i h g o (removeEmpties f)
+
 compileString :: String -> IO ()
 compileString = compileIO (compileProgram . parse)
 
@@ -69,11 +72,11 @@ compileFile = compileIO (compileProgram . parse) <=< readFile
 
 compileProgram :: Program -> Result FQC
 compileProgram prog = case main of
-    Topl _ vars (Just (Forall [] t)) e -> compile (argumentEnv vars t) e
+    Topl _ vars (Just (Forall [] t)) e -> removeEmptyFQC <$> compile (argumentEnv vars t) e
     Topl _ _ (Just _) _ -> throw NotImplemented
     Topl _ vars Nothing e -> case checkMain prog of
         Left e -> throw $ TypeError e
-        Right (Forall [] t) -> compile (argumentEnv vars t) e
+        Right (Forall [] t) -> removeEmptyFQC <$> compile (argumentEnv vars t) e
         Right _ -> throw NotImplemented
     where main = fromJust $ find (\(Topl f _ _ _) -> f == Id Nothing "main") prog
 

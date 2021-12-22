@@ -19,7 +19,20 @@ import qualified Numeric.LinearAlgebra as L
 import Data.List
 import Translate.Result
 import qualified Data.Complex as C
-import Data.Complex (conjugate)
+import Translate.Compile
+import Frontend.SAST.Par
+
+genFile :: FilePath -> IO ()
+genFile = putStrLn . putQASM . testResult . compileProgram . parse <=< readFile
+
+-- Ser 
+--     [ Par [Perm [0]]
+--     , Perm [0]
+--     , Par [Rot (0.7071067811865475,0.7071067811865475) (0.7071067811865475,-0.7071067811865475)]
+--     , Perm [0]
+--     , Perm [0]
+--     , Rot (0.0,1.0) (1.0,0.0)
+--     ]
 
 test :: Unitary
 test = Ser [ Par [Perm [0,1]]
@@ -44,8 +57,6 @@ type Circ = [Gate]
 newtype Gen a = Gen { getGen :: StateT (Int,Int) (Writer Circ) a }
     deriving (Functor, Applicative, Monad, MonadState (Int,Int), MonadWriter Circ)
 
--- runGen :: Gen a -> a
--- runGen m = runStateT (StateT (0,0) m) ()
 runGen :: Gen a -> ((a, (Int, Int)), Circ)
 runGen = runWriter . flip runStateT (0,0) . getGen
 
@@ -54,7 +65,7 @@ evalGen = snd . runGen
 
 generate :: FQC -> QASM
 generate (FQC i h o g φ) = QASM
-    { qubits = i+h
+    { qubits  = i+h
     , discard = g
     , circuit = evalGen (genCircuit φ)
     }
@@ -78,14 +89,6 @@ data Gate
 x, h :: Int -> Gate
 x q = Unitary q pi 0 (-pi)
 h q = Unitary q (pi/2) 0 (-pi)
-
-{-
-qubit heap[3];
-
-U(θ,φ,λ) heap[0];
-
-swap heap[0], heap[1];
--}
 
 instance Eq Gate where
     Swap a b == Swap c d = (a,b) == (c,d) || (a,b) == (d,c)
@@ -132,6 +135,7 @@ genCircuit (Cond (Rot (i,j) (k,l)) (Rot (a,b) (c,d))) = do
                 , x (r-1), Unitary r t f l, CX (r-1) r, Unitary r t' f' l', CX (r-1) r, x (r-1)
                 ]
     tell gates
+    decRow
 genCircuit (Cond (Rot (i,j) (k,l)) (Perm [0])) = do
     incRow
     (r,_c) <- get
@@ -145,7 +149,7 @@ genCircuit (Perm ps) = do
     tell swaps 
 genCircuit (Par ps) = mapM_ (addRow. testResult . arity >> genCircuit) ps
 genCircuit (Ser ss) = mapM_ (addCol . testResult . arity >> genCircuit) ss
-genCircuit _ = undefined
+genCircuit x = error $ show x
 
 permutationSwaps :: [Int] -> [Gate]
 permutationSwaps = filter (\(Swap m n) -> m /= n) . nub . zipWith Swap [0..]
@@ -162,16 +166,11 @@ controlledGate i j k l = ((θ,φ,λ), (θ',φ',λ'))
           (θ',φ',λ') = qasmGate (C mdi) (C mdj) (C mdk) (C mdl)
 
 qasmGate :: C -> C -> C -> C -> (C,C,C)
-qasmGate i j k l = (real θ, real φ, real λ)
+qasmGate i j k l = (θ, φ, λ)
     where imag = 0 :+ 1
-          real = C . (C.:+ 0) . C.realPart . complex
           θ = 2 * acos i
           φ = if j == 0 then 0 else log (j / sin (θ/2)) / imag
           λ = if k == 0 then 0 else log (-(k / sin (θ/2))) / imag
-
--- gate h q {
---    U(π/2, 0, π) q;
--- }
 
 qasmString :: [[String]] -> String
 qasmString = unlines . map concat

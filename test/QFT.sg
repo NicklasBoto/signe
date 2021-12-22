@@ -3,7 +3,5 @@ R2 q : qubit -> qubit
         then e^(i pi/2)*~1
         else ~0
 
-main : qubit -> qubit
-    := if* q
-        then e^(i pi/2)*~1
-        else ~0
+main q : qubit -> qubit
+    := 

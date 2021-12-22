@@ -1,0 +1,7 @@
+main : qubit
+    := H ~1
+
+H q : qubit -> qubit
+    := if* q
+        then ~1
+        else ~0

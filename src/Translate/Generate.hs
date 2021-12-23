@@ -157,9 +157,7 @@ permutationSwaps = filter (\(Swap m n) -> m /= n) . nub . zipWith Swap [0..]
 
 controlledGate :: C -> C -> C -> C -> ((Double,Double,Double), (Double,Double,Double))
 controlledGate i j k l = ((θ,φ,λ), (θ',φ',λ'))
-    where φ1 = i
-          conj = C . C.conjugate . complex
-          m  = L.matFunc sqrt ((2 L.>< 2) (crotations (i,j) (k,l)))
+    where m  = L.matFunc sqrt ((2 L.>< 2) (crotations (i,j) (k,l)))
           md = L.tr m
           [[mi,mj],[mk,ml]] = L.toLists m
           [[mdi,mdj],[mdk,mdl]] = L.toLists md

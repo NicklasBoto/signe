@@ -26,4 +26,8 @@
 --                     in (X x, y)
 
 
-main := ~+
+-- main 
+--  := let (x,y) = if° ~+ then (~1, -1 * ~-) else (~0, ~-) 
+--       in (\q. if° q then ~- else ~+) x 
+
+main := (~1, ~1)

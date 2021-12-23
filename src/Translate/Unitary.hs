@@ -37,7 +37,7 @@ arity (Cond t c) = do
     m <- arity t
     n <- arity c
     guard (m == n) $ ConditionalArityMismatch t c
-    return $ m + n
+    return (m+1)
 arity (Rot _ _) = return 1
 
 inner :: (C, C) -> (C, C) -> C

@@ -14,6 +14,7 @@ import Translate.FQC
 import GHC.TypeLits
 import Control.Monad.Writer
 import Control.Monad.State
+import Control.Monad
 import Data.Bifunctor
 import qualified Numeric.LinearAlgebra as L
 import Data.List
@@ -147,8 +148,8 @@ genCircuit (Perm ps) = do
     (r,_c) <- get 
     let swaps = map (modSwap r) $ permutationSwaps ps
     tell swaps 
-genCircuit (Par ps) = mapM_ (addRow. testResult . arity >> genCircuit) ps
-genCircuit (Ser ss) = mapM_ (addCol . testResult . arity >> genCircuit) ss
+genCircuit (Par ps) = mapM_ (liftM2 (>>) genCircuit (addRow . testResult . arity)) ps
+genCircuit (Ser ss) = mapM_ (liftM2 (>>) genCircuit (addCol . testResult . arity)) ss
 genCircuit x = error $ show x
 
 permutationSwaps :: [Int] -> [Gate]
@@ -166,8 +167,9 @@ controlledGate i j k l = ((θ,φ,λ), (θ',φ',λ'))
           (θ',φ',λ') = qasmGate (C mdi) (C mdj) (C mdk) (C mdl)
 
 qasmGate :: C -> C -> C -> C -> (C,C,C)
-qasmGate i j k l = (θ, φ, λ)
+qasmGate i j k l = (real θ, real φ, real λ)
     where imag = 0 :+ 1
+          real = C . (C.:+ 0) . C.realPart . complex
           θ = 2 * acos i
           φ = if j == 0 then 0 else log (j / sin (θ/2)) / imag
           λ = if k == 0 then 0 else log (-(k / sin (θ/2))) / imag

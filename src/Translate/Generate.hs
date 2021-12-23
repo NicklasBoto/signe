@@ -82,7 +82,7 @@ data QASM
     } deriving Show
 
 data Gate
-    = Unitary Int C C C
+    = Unitary Int Double Double Double
     | CX Int Int
     | Swap Int Int
     deriving Show
@@ -119,7 +119,7 @@ decRow = addRow (-1)
 decCol = addCol (-1)
 
 modSwap :: Int -> Gate -> Gate
-modSwap i ~(Swap x y) = Swap (x+i) (y+i) 
+modSwap i ~(Swap x y) = Swap (x+i) (y+i)
 
 genCircuit :: Unitary -> Gen ()
 genCircuit (Rot (i,j) (k,l)) = do
@@ -131,9 +131,9 @@ genCircuit (Cond (Rot (i,j) (k,l)) (Rot (a,b) (c,d))) = do
     incRow
     (r,_c) <- get
     let ((θ,φ,λ), (θ',φ',λ')) = controlledGate i j k l
-        ((t,f,l), (t',f',l')) = controlledGate a b c d
+        ((t,f,lam), (t',f',lam')) = controlledGate a b c d
         gates = [ Unitary r θ φ λ, CX (r-1) r, Unitary r θ' φ' λ', CX (r-1) r
-                , x (r-1), Unitary r t f l, CX (r-1) r, Unitary r t' f' l', CX (r-1) r, x (r-1)
+                , x (r-1), Unitary r t f lam, CX (r-1) r, Unitary r t' f' lam', CX (r-1) r, x (r-1)
                 ]
     tell gates
     decRow
@@ -145,9 +145,9 @@ genCircuit (Cond (Rot (i,j) (k,l)) (Perm [0])) = do
     tell gates
     decRow
 genCircuit (Perm ps) = do
-    (r,_c) <- get 
+    (r,_c) <- get
     let swaps = map (modSwap r) $ permutationSwaps ps
-    tell swaps 
+    tell swaps
 genCircuit (Par ps) = mapM_ (liftM2 (>>) genCircuit (addRow . testResult . arity)) ps
 genCircuit (Ser ss) = mapM_ (liftM2 (>>) genCircuit (addCol . testResult . arity)) ss
 genCircuit x = error $ show x
@@ -155,7 +155,7 @@ genCircuit x = error $ show x
 permutationSwaps :: [Int] -> [Gate]
 permutationSwaps = filter (\(Swap m n) -> m /= n) . nub . zipWith Swap [0..]
 
-controlledGate :: C -> C -> C -> C -> ((C,C,C), (C,C,C))
+controlledGate :: C -> C -> C -> C -> ((Double,Double,Double), (Double,Double,Double))
 controlledGate i j k l = ((θ,φ,λ), (θ',φ',λ'))
     where φ1 = i
           conj = C . C.conjugate . complex
@@ -166,13 +166,18 @@ controlledGate i j k l = ((θ,φ,λ), (θ',φ',λ'))
           (θ,φ,λ) = qasmGate (C mi) (C mj) (C mk) (C ml)
           (θ',φ',λ') = qasmGate (C mdi) (C mdj) (C mdk) (C mdl)
 
-qasmGate :: C -> C -> C -> C -> (C,C,C)
-qasmGate i j k l = (real θ, real φ, real λ)
-    where imag = 0 :+ 1
-          real = C . (C.:+ 0) . C.realPart . complex
-          θ = 2 * acos i
-          φ = if j == 0 then 0 else log (j / sin (θ/2)) / imag
-          λ = if k == 0 then 0 else log (-(k / sin (θ/2))) / imag
+qasmGate :: C -> C -> C -> C -> (Double,Double,Double)
+qasmGate i j k l
+  | abs i^2 + abs k^2 == 1
+ && j == - (conjugate k)
+ && l == conjugate i = (θ, φ, λ)
+  | otherwise = error "not good"
+    where conjugate = C . C.conjugate . complex
+          x :+ y = i
+          p :+ q = k
+          φ = if x == 0 || p == 0 then 0 else atan (-y/x) + atan (-q/p)
+          λ = if x == 0 || p == 0 then 0 else atan (-y/x) - atan (-q/p)
+          θ = 2 * atan (sqrt ((p^2 + q^2) / (x^2 + y^2)))
 
 qasmString :: [[String]] -> String
 qasmString = unlines . map concat

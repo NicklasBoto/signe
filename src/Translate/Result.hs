@@ -26,6 +26,9 @@ import Control.Monad.Except
 newtype Result a = Result { getResult :: Except TranslationError a }
     deriving (Functor, Applicative, Monad, MonadError TranslationError)
 
+newtype ResultT m a = ResultT { getResultT :: ExceptT TranslationError m a }
+    deriving (Functor, Applicative, Monad, MonadError TranslationError)
+
 instance MonadFail Result where
     fail = throwError . Fail
 
